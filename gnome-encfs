@@ -52,7 +52,7 @@ TEST_AMOUNT = None
 
 AUTOSTART_FNAME = os.path.join(xdg_ch, "autostart", "gnome-encfs.desktop")
 AUTOSTART_ATTR = {
-    "Exec": "gnome-encfs --autostart",
+    "Exec": "gnome-encfs autostart",
     "Name": "EncFS",
     "Comment": "Mount EncFS folders configured in GNOME's keyring",
     "Icon": "folder",
@@ -116,15 +116,16 @@ def _options():
     
     opts, args = op.parse_args()
     
+    try:
+        args.remove("autostart")
+        opts.autostart = True
+        opts.mount = True
+    except ValueError:
+        opts.autostart = False
+    
     if opts.list + opts.mount + opts.add + opts.edit + opts.remove != 1:
         op.print_help()
         op.exit(1)
-    
-    try:
-        args.remove("--autostart")
-        opts.autostart = True
-    except ValueError:
-        opts.autostart = False
     
     # normalize paths
     args = [_pathify(a) for a in args]
