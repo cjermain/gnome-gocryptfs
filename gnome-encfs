@@ -50,9 +50,9 @@ TEST_EPATH = None
 TEST_MPOINT = None
 TEST_AMOUNT = None
 
-AUTOSTART_FNAME = os.path.join(xdg_ch, "autostart", "gencfs.desktop")
+AUTOSTART_FNAME = os.path.join(xdg_ch, "autostart", "gnome-encfs.desktop")
 AUTOSTART_ATTR = {
-    "Exec": "gencfs --autostart",
+    "Exec": "gnome-encfs --autostart",
     "Name": "EncFS",
     "Comment": "Mount EncFS folders configured in GNOME's keyring",
     "Icon": "folder",
