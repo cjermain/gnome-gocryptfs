@@ -37,8 +37,10 @@ import gnomekeyring as gk
 # constants
 # =============================================================================
 
+MODE = "GNOME_ENCFS_TEST" in os.environ and "test" or ""
+
 # attributes to detect gnome-encfs items in keyring
-GENCFS_ATTR = {"gnome-encfs": "" }
+GENCFS_ATTR = {"gnome-encfs": MODE }
 
 KEYRING = gk.get_default_keyring_sync()
 

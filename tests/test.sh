@@ -1,3 +1,5 @@
+export GNOME_ENCFS_TEST=""
+
 expect() {
 	echo "# EXPECT: $1"
 }
