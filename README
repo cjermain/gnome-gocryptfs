@@ -7,7 +7,7 @@ gnome-encfs
 their passwords in the [keyring][2] and optionally mounting them at login using
 GNOME's autostart mechanism.
 
-*gnome-encfs* allows you to use strong passwords for EncFS folder while still
+*gnome-encfs* allows you to use strong passwords for EncFS folders while still
 mounting them painlessly (i.e. no password prompt).
 This is an advantage over automount solutions like *pam-encfs* and *pam-mount*
 which require to use the same password for EncFS folders as for your local user
