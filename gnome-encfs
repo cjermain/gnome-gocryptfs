@@ -66,7 +66,7 @@ MSG_NO_MATCH = ("No matching EncFS items in keyring.\n"
 
 USAGE = """Usage: %prog --list
        %prog --mount [ENCFS-PATH-or-MOUNT-POINT]
-       %prog --add ENCFS-PATH MOUNT-POINT [--login-mount]
+       %prog --add ENCFS-PATH MOUNT-POINT
        %prog --edit MOUNT-POINT
        %prog --remove MOUNT-POINT"""
        

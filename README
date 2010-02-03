@@ -28,8 +28,8 @@ Installation
     $ install gnome-encfs /usr/local/bin
     
 **Note:** You can run *gnome-encfs* right from the extracted package but to make
-use of the automount feature at GNOME login, it must be placed in your *PATH*
-as it is configured during a login to GNOME. Using the install command above
+use of the automount feature at GNOME login, it must be placed in somewhere
+*PATH* (as configured during a login to GNOME). Using the install command above
 ensures this requirement is fulfilled.
 
 Usage
@@ -43,11 +43,11 @@ Add an EncFS folder at `~/.Private.encrypted` which should get mounted to
 `~/Private`.
 
     $ gnome-encfs -a ~/.Private.encrypted ~/Private
-    > EncFS password: <enter encfs password>
-    > Mount at login [Y/n]: <say 'y' or 'n'>
+    EncFS password: <enter encfs password>
+    Mount at login [Y/n]: <say 'y' or 'n'>
     
-This adds the encfs path, its mount location and password to the GNOME keyring
-and sets up a GNOME autostart item to mount it at GNOME login (if enabled).  
+This adds the EncFS path, its mount location and password to the GNOME keyring
+and sets up a GNOME autostart entry to mount it at GNOME login (if enabled).
 
 ### Mount an EncFS folder
 
@@ -60,15 +60,30 @@ you do that with
 which looks up the password in the keyring and does the mounting without
 the need to enter the password manually.
 
-### Other stuff
+### Other tasks
 
-You can also  show, edit and remove EncFS folders handled by *gnome-enfs*.
-Inspect
+You can also  show, edit and remove EncFS folders handled by *gnome-enfs*:
 
-    $ gnome -h
+    $ gnome-encfs -h
+    Usage: gnome-encfs --list
+           gnome-encfs --mount [ENCFS-PATH-or-MOUNT-POINT]
+           gnome-encfs --add ENCFS-PATH MOUNT-POINT
+           gnome-encfs --edit MOUNT-POINT
+           gnome-encfs --remove MOUNT-POINT
     
-for some instructions. Usage should be straight forward - if not,
-[submit an issue][7].
+    Painlessly mount and manage EncFS folders using GNOME's keyring.
+    
+    Options:
+      --version            show program's version number and exit
+      -h, --help           show this help message and exit
+      -l, --list           list all EncFS items stored in keyring
+      -m, --mount          mount all or selected EncFS paths stored in keyring
+      -a, --add            add a new EncFS item to keyring
+      -e, --edit           edit an EncFS item in keyring
+      -r, --remove         remove an EncFS item from keyring
+    ...
+    
+Usage should be straight forward - otherwise [submit an issue][7].
 
 License
 -------
@@ -77,7 +92,7 @@ License
 
 [1]: http://www.arg0.net/encfs
 [2]: http://live.gnome.org/GnomeKeyring
-[3]: 
+[3]: http://bitbucket.org/obensonne/gnome-encfs/get/tip.tar.gz
 [4]: 
 [5]: http://dropbox.com
 [6]: http://www.gnu.org/licenses/gpl.html
