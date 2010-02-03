@@ -78,6 +78,8 @@ corresponding mount points and passwords in the GNOME keyring. Second it
 optionally mounts EncFS paths automatically on login to a GNOME session.
 """
 
+VERSION="0.1"
+
 # =============================================================================
 # helper
 # =============================================================================
@@ -85,7 +87,7 @@ optionally mounts EncFS paths automatically on login to a GNOME session.
 def _options():
     """Parse command line options."""
     
-    op = optparse.OptionParser(usage=USAGE, version="0.1",
+    op = optparse.OptionParser(usage=USAGE, version=VERSION,
                                description=DESCRIPTION, epilog=EPILOG)
     
     op.add_option("-l", "--list", action="store_true", default=False,
