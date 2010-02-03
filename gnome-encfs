@@ -37,7 +37,7 @@ import gnomekeyring as gk
 # constants
 # =============================================================================
 
-# attributes to detect GEncFS items in keyring
+# attributes to detect gnome-encfs items in keyring
 GENCFS_ATTR = {"gnome-encfs": "" }
 
 KEYRING = gk.get_default_keyring_sync()
@@ -53,7 +53,7 @@ TEST_AMOUNT = None
 AUTOSTART_FNAME = os.path.join(xdg_ch, "autostart", "gencfs.desktop")
 AUTOSTART_ATTR = {
     "Exec": "gencfs --autostart",
-    "Name": "GEncFS",
+    "Name": "EncFS",
     "Comment": "Mount EncFS folders configured in GNOME's keyring",
     "Icon": "folder",
     "Version": "1.0",
@@ -73,7 +73,7 @@ USAGE = """Usage: %prog --list
 DESCRIPTION = """Painlessly mount and manage EncFS folders using GNOME's
 keyring."""
 
-EPILOG = """GEncFS has two functionalities. First it stores EncFS paths,
+EPILOG = """gnome-encfs has two functionalities. First it stores EncFS paths,
 corresponding mount points and passwords in the GNOME keyring. Second it
 optionally mounts EncFS paths automatically on login to a GNOME session.
 """
