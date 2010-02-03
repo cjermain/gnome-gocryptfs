@@ -1,0 +1,388 @@
+#!/usr/bin/python
+
+# =============================================================================
+#
+#    gnome-encfs - GNOME keyring and auto-mount integration of EncFS folders.
+#    Copyright (C) 2010 Oben Sonne <obensonne@googlemail.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# =============================================================================
+
+import getpass
+import os
+import os.path
+import optparse
+import subprocess
+import sys
+
+from xdg.DesktopEntry import DesktopEntry as xdg_de
+from xdg.BaseDirectory import xdg_config_home as xdg_ch
+
+import gtk # automatically set application name
+import gnomekeyring as gk
+
+# =============================================================================
+# constants
+# =============================================================================
+
+# attributes to detect GEncFS items in keyring
+GENCFS_ATTR = {"gnome-encfs": "" }
+
+KEYRING = gk.get_default_keyring_sync()
+
+ITYPE = gk.ITEM_GENERIC_SECRET
+
+TEST_PROCEED = None
+TEST_PASSWORD = None
+TEST_EPATH = None
+TEST_MPOINT = None
+TEST_AMOUNT = None
+
+AUTOSTART_FNAME = os.path.join(xdg_ch, "autostart", "gencfs.desktop")
+AUTOSTART_ATTR = {
+    "Exec": "gencfs --autostart",
+    "Name": "GEncFS",
+    "Comment": "Mount EncFS folders configured in GNOME's keyring",
+    "Icon": "folder",
+    "Version": "1.0",
+    "X-GNOME-Autostart-enabled": "true"
+}
+
+MSG_NO_MATCH = ("No matching EncFS items in keyring.\n"
+                "Use option --list to show available items or "
+                "option --add to add items.")
+
+USAGE = """Usage: %prog --list
+       %prog --mount [ENCFS-PATH-or-MOUNT-POINT]
+       %prog --add ENCFS-PATH MOUNT-POINT [--login-mount]
+       %prog --edit MOUNT-POINT
+       %prog --remove MOUNT-POINT"""
+       
+DESCRIPTION = """Painlessly mount and manage EncFS folders using GNOME's
+keyring."""
+
+EPILOG = """GEncFS has two functionalities. First it stores EncFS paths,
+corresponding mount points and passwords in the GNOME keyring. Second it
+optionally mounts EncFS paths automatically on login to a GNOME session.
+"""
+
+# =============================================================================
+# helper
+# =============================================================================
+
+def _options():
+    """Parse command line options."""
+    
+    op = optparse.OptionParser(usage=USAGE, version="0.1",
+                               description=DESCRIPTION, epilog=EPILOG)
+    
+    op.add_option("-l", "--list", action="store_true", default=False,
+                  help="list all EncFS items stored in keyring")
+    op.add_option("-m", "--mount", action="store_true", default=False,
+                  help="mount all or selected EncFS paths stored in keyring")
+    op.add_option("-a", "--add", action="store_true", default=False,
+                  help="add a new EncFS item to keyring")
+    op.add_option("-e", "--edit", action="store_true", default=False,
+                  help="edit an EncFS item in keyring")
+    op.add_option("-r", "--remove", action="store_true", default=False,
+                  help="remove an EncFS item from keyring")
+    
+    og = optparse.OptionGroup(op, "Non-interactive")
+    og.add_option("", "--proceed", default=None,
+                  help="Input for proceed question")
+    og.add_option("", "--password", default=None, metavar="PW",
+                  help="Input for password prompt")
+    og.add_option("", "--epath", default=None,
+                  help="Input for EncFS path edit")
+    og.add_option("", "--mpoint", default=None,
+                  help="Input for mount point edit")
+    og.add_option("", "--amount", default=None,
+                  help="Input for auto mount question")
+    op.add_option_group(og)
+    
+    opts, args = op.parse_args()
+    
+    if opts.list + opts.mount + opts.add + opts.edit + opts.remove != 1:
+        op.print_help()
+        op.exit(1)
+    
+    try:
+        args.remove("--autostart")
+        opts.autostart = True
+    except ValueError:
+        opts.autostart = False
+    
+    # normalize paths
+    args = [_pathify(a) for a in args]
+    
+    opts.p1 = args and args.pop(0) or None
+    opts.p2 = args and args.pop(0) or None
+    
+    if opts.add and not (opts.p1 and opts.p2):
+        op.error("add needs an EncFS path and a moint point")
+        op.print_help()
+        op.exit(1)
+        
+    if opts.remove and not opts.p1:
+        op.error("remove needs a moint point")
+        op.print_help()
+        op.exit(1)
+    
+    global TEST_PROCEED
+    TEST_PROCEED = opts.proceed
+    global TEST_PASSWORD
+    TEST_PASSWORD = opts.password
+    global TEST_EPATH
+    TEST_EPATH = opts.epath
+    global TEST_MPOINT
+    TEST_MPOINT = opts.mpoint
+    global TEST_AMOUNT
+    TEST_AMOUNT = opts.amount
+    
+    return opts
+
+def _exit(ec):
+    """Exit with additional check if autostart file is still needed."""
+    
+    _autostart(_get_items())
+    sys.exit(ec)
+
+def _proceed(msg):
+    print("Warning: %s" % msg)
+    proceed = TEST_PROCEED or raw_input("Proceed [y/N]: ")
+    if proceed.strip()[0].lower() != "y":
+        _exit(2)
+
+def _pathify(path):
+    
+    path = os.path.expanduser(path)
+    path = os.path.expandvars(path)
+    path = os.path.abspath(path)
+    path = os.path.realpath(path)
+    return path
+
+def _is_mounted(mpoint):
+    """Check of something is mounted at given mount point."""
+    
+    p = subprocess.Popen(["mount"], stdout=subprocess.PIPE)
+    mount = p.communicate()[0]
+    lines = mount.strip('\n').split('\n')
+    points = map(lambda line: line.split()[2], lines)
+    points = [os.path.abspath(p) for p in points]
+    return os.path.abspath(mpoint) in points
+
+def _is_encfs(epath):
+    """Check if 'epath' points to an EncFS directory."""
+    
+    p = subprocess.Popen(["encfsctl", "info", epath], stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    p.communicate()
+    return p.returncode == 0
+
+_items_cached = None
+
+def _get_items(mpoint=None, any=None):
+    """Get EncFS items where EncFS path or mount point equals 'path'."""
+    
+    global _items_cached
+    
+    if _items_cached is None:
+        try:
+            _items_cached = gk.find_items_sync(ITYPE, GENCFS_ATTR)
+        except gk.NoMatchError:
+            _items_cached = []
+    
+    return [i for i in _items_cached if
+                not (mpoint or any) or
+                mpoint and i.attributes["mount-point"] == mpoint or
+                (any and (i.attributes["encfs-path"] == any or
+                          i.attributes["mount-point"] == any))]
+
+def _autostart(enable):
+    """Set up XDG autostart file."""
+    
+    if not enable and os.path.exists(AUTOSTART_FNAME):
+        os.remove(AUTOSTART_FNAME)
+        return
+    
+    de = xdg_de(filename=AUTOSTART_FNAME)
+    for key, value in AUTOSTART_ATTR.items():
+        de.set(key, value)
+    de.validate()
+    de.write()
+
+# =============================================================================
+# actions
+# =============================================================================
+
+def list_items():
+    """List EncFS items in keyring."""
+    
+    items = _get_items()
+    for item in items:
+        epath = item.attributes["encfs-path"]
+        mpoint = item.attributes["mount-point"]
+        amount = item.attributes["auto-mount"]
+        print("* encfs path     : %s" % epath)
+        print("  mount point    : %s" % mpoint)
+        print("  mount at login : %s" % (amount == "y" and "yes" or "no"))
+        
+    return True
+
+def add_item(epath, mpoint):
+    """Add new EncFS item to keyring."""
+    
+    if not _is_encfs(epath):
+        _proceed("no EncFS at given path")
+    if not os.path.isdir(mpoint):
+        _proceed("mount point is not a directory")
+    if _get_items(mpoint=mpoint):
+        _proceed("mount point already in keyring")
+    
+    secret = TEST_PASSWORD or getpass.getpass("EncFS password: ")
+    amount = TEST_AMOUNT or raw_input("Mount at login [Y/n]: ") or "y"
+    amount = amount.strip()[0].lower() == "y" and "y" or "n"
+    attr = {"encfs-path": epath, "mount-point": mpoint, "auto-mount": amount}
+    attr.update(GENCFS_ATTR)
+    name = "EncFS mount at %s" % mpoint
+    gk.item_create_sync(KEYRING, ITYPE, name, attr, secret, False)
+    
+    global _items_cached
+    _items_cached = None
+    
+    return True
+
+def edit_item(mpoint):
+    """Edit EncFS item in keyring."""
+    
+    items = _get_items()
+    edits = _get_items(mpoint=mpoint)
+    
+    if not edits:
+        print(MSG_NO_MATCH)
+        return False
+
+    for item in edits:
+        
+        # get item data
+        epath = item.attributes["encfs-path"]
+        mpoint = item.attributes["mount-point"]
+        amount = item.attributes["auto-mount"]
+        epath = TEST_EPATH or raw_input("EncFS path [%s]: " % epath) or epath
+        mpoint = TEST_MPOINT or raw_input("Mount point [%s]: " % mpoint) or mpoint
+        secret = TEST_PASSWORD or getpass.getpass("Password [**current**]: ") or item.secret
+        preset = amount == "y" and "Y/n" or "y/N"
+        amount = TEST_AMOUNT or raw_input("Mount at login [%s]: " % preset) or amount
+        amount = amount.strip()[0].lower() == "y" and "y" or "n"
+        mpoint = _pathify(mpoint)
+        epath = _pathify(epath)
+        
+        # check item data
+        for other in [i for i in items if i.item_id != item.item_id]:
+            print("cmp %s - %s" % (other.attributes["mount-point"], mpoint))
+            if other.attributes["mount-point"] == mpoint:
+                _proceed("mount point already in use")
+        if not _is_encfs(epath):
+            _proceed("no EncFS at given path")
+        if not os.path.isdir(mpoint):
+            _proceed("mount point is not a directory")
+
+        # update item data
+        attributes = GENCFS_ATTR.copy()
+        attributes["encfs-path"] = epath
+        attributes["mount-point"] = mpoint
+        attributes["auto-mount"] = amount
+        gk.item_set_attributes_sync(KEYRING, item.item_id, attributes)
+        info = gk.item_get_info_sync(KEYRING, item.item_id)
+        info.set_secret(secret)
+        gk.item_set_info_sync(KEYRING, item.item_id, info)
+        
+    return True
+
+def remove_item(mpoint):
+    """Remove EncFS item from keyring."""
+    
+    items = _get_items(mpoint=mpoint)
+    
+    if not items:
+        print(MSG_NO_MATCH)
+        return False
+
+    for item in items:
+        gk.item_delete_sync(KEYRING, item.item_id)
+        
+    global _items_cached
+    _items_cached = None
+
+    return True
+
+def mount_items(path, autostart):
+    """Mount all items where the EncFS path or mount point equals 'path'."""
+
+    items = _get_items(any=path)
+
+    if not items:
+        print(MSG_NO_MATCH)
+        return False
+    
+    if autostart:
+        items = [i for i in items if i.attributes["auto-mount"] == "y"]
+    
+    for item in items:
+        epath = item.attributes["encfs-path"]
+        mpoint = item.attributes["mount-point"]
+        msg = "Mounting %s at %s: " % (epath, mpoint)
+        if _is_mounted(mpoint):
+            msg += "mount point already in use"
+        elif not os.path.isdir(mpoint):
+            msg += "mount point does not exist or is not a directory"
+        else:
+            cmd = ["encfs", "-S", epath, mpoint]
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                                 stdout=subprocess.PIPE)
+            out = p.communicate(input="%s\n" % item.secret)[0].strip("\n")
+            msg += p.returncode and out or "OK"
+            
+        print(msg)
+
+    return True
+            
+# =============================================================================
+# main
+# =============================================================================
+
+def main():
+    
+    opts = _options()
+    
+    if opts.add:
+        ok = add_item(opts.p1, opts.p2)
+    elif opts.list:
+        ok = list_items()
+    elif opts.mount:
+        ok = mount_items(opts.p1, opts.autostart)
+    elif opts.edit:
+        ok = edit_item(opts.p1)
+    elif opts.remove:
+        ok = remove_item(opts.p1)
+    else:
+        assert False
+
+    return ok
+    
+if __name__ == '__main__':
+    
+    ret = main() and 0 or 1
+    _exit(ret)

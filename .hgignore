@@ -1,0 +1,14 @@
+syntax: glob
+
+# build, temp and backup files
+*.pyc
+*~
+
+# test files
+tests/*.err
+tests/*.out
+tests/tenv
+
+# IDE files
+.project
+.pydevproject
