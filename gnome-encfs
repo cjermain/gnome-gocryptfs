@@ -34,33 +34,30 @@ import gtk # automatically set application name
 import gnomekeyring as gk
 
 # =============================================================================
+# test mode related
+# =============================================================================
+
+TEST = "GNOME_ENCFS_TEST" in os.environ
+
+class preset:
+    """Preset user input. Used for non-interactive testing mode."""
+    
+    proceed = None
+    password = None
+    epath = None
+    mpoint = None
+    amount = None
+
+# =============================================================================
 # constants
 # =============================================================================
 
-MODE = "GNOME_ENCFS_TEST" in os.environ and "test" or ""
-
 # attributes to detect gnome-encfs items in keyring
-GENCFS_ATTR = {"gnome-encfs": MODE }
+GENCFS_ATTR = {"gnome-encfs": TEST and "test" or "" }
 
 KEYRING = gk.get_default_keyring_sync()
 
 ITYPE = gk.ITEM_GENERIC_SECRET
-
-TEST_PROCEED = None
-TEST_PASSWORD = None
-TEST_EPATH = None
-TEST_MPOINT = None
-TEST_AMOUNT = None
-
-AUTOSTART_FNAME = os.path.join(xdg_ch, "autostart", "gnome-encfs.desktop")
-AUTOSTART_ATTR = {
-    "Exec": "gnome-encfs autostart",
-    "Name": "EncFS",
-    "Comment": "Mount EncFS folders configured in GNOME's keyring",
-    "Icon": "folder",
-    "Version": "1.0",
-    "X-GNOME-Autostart-enabled": "true"
-}
 
 MSG_NO_MATCH = ("No matching EncFS items in keyring.\n"
                 "Use option --list to show available items or "
@@ -145,16 +142,11 @@ def _options():
         op.print_help()
         op.exit(1)
     
-    global TEST_PROCEED
-    TEST_PROCEED = opts.proceed
-    global TEST_PASSWORD
-    TEST_PASSWORD = opts.password
-    global TEST_EPATH
-    TEST_EPATH = opts.epath
-    global TEST_MPOINT
-    TEST_MPOINT = opts.mpoint
-    global TEST_AMOUNT
-    TEST_AMOUNT = opts.amount
+    preset.proceed = opts.proceed
+    preset.password = opts.password
+    preset.epath = opts.epath
+    preset.mpoint = opts.mpoint
+    preset.amount = opts.amount
     
     return opts
 
@@ -166,7 +158,7 @@ def _exit(ec):
 
 def _proceed(msg):
     print("Warning: %s" % msg)
-    proceed = TEST_PROCEED or raw_input("Proceed [y/N]: ")
+    proceed = preset.proceed or raw_input("Proceed [y/N]: ")
     if proceed.strip()[0].lower() != "y":
         _exit(2)
 
@@ -218,12 +210,26 @@ def _get_items(mpoint=None, any=None):
 def _autostart(enable):
     """Set up XDG autostart file."""
     
-    if not enable and os.path.exists(AUTOSTART_FNAME):
-        os.remove(AUTOSTART_FNAME)
+    if TEST: # don't change this file in test mode
+        return
+
+    fname = os.path.join(xdg_ch, "autostart", "gnome-encfs.desktop")
+
+    if not enable and os.path.exists(fname):
+        os.remove(fname)
         return
     
-    de = xdg_de(filename=AUTOSTART_FNAME)
-    for key, value in AUTOSTART_ATTR.items():
+    content = {
+        "Exec": "gnome-encfs autostart",
+        "Name": "EncFS",
+        "Comment": "Mount EncFS folders configured in GNOME's keyring",
+        "Icon": "folder",
+        "Version": "1.0",
+        "X-GNOME-Autostart-enabled": "true"
+    }
+    
+    de = xdg_de(filename=fname)
+    for key, value in content.items():
         de.set(key, value)
     de.validate()
     de.write()
@@ -256,8 +262,8 @@ def add_item(epath, mpoint):
     if _get_items(mpoint=mpoint):
         _proceed("mount point already in keyring")
     
-    secret = TEST_PASSWORD or getpass.getpass("EncFS password: ")
-    amount = TEST_AMOUNT or raw_input("Mount at login [Y/n]: ") or "y"
+    secret = preset.password or getpass.getpass("EncFS password: ")
+    amount = preset.amount or raw_input("Mount at login [Y/n]: ") or "y"
     amount = amount.strip()[0].lower() == "y" and "y" or "n"
     attr = {"encfs-path": epath, "mount-point": mpoint, "auto-mount": amount}
     attr.update(GENCFS_ATTR)
@@ -285,11 +291,11 @@ def edit_item(mpoint):
         epath = item.attributes["encfs-path"]
         mpoint = item.attributes["mount-point"]
         amount = item.attributes["auto-mount"]
-        epath = TEST_EPATH or raw_input("EncFS path [%s]: " % epath) or epath
-        mpoint = TEST_MPOINT or raw_input("Mount point [%s]: " % mpoint) or mpoint
-        secret = TEST_PASSWORD or getpass.getpass("Password [**current**]: ") or item.secret
-        preset = amount == "y" and "Y/n" or "y/N"
-        amount = TEST_AMOUNT or raw_input("Mount at login [%s]: " % preset) or amount
+        epath = preset.epath or raw_input("EncFS path [%s]: " % epath) or epath
+        mpoint = preset.mpoint or raw_input("Mount point [%s]: " % mpoint) or mpoint
+        secret = preset.password or getpass.getpass("Password [**current**]: ") or item.secret
+        hint = amount == "y" and "Y/n" or "y/N"
+        amount = preset.amount or raw_input("Mount at login [%s]: " % hint) or amount
         amount = amount.strip()[0].lower() == "y" and "y" or "n"
         mpoint = _pathify(mpoint)
         epath = _pathify(epath)
