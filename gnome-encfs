@@ -153,7 +153,7 @@ def _options():
 def _exit(ec):
     """Exit with additional check if autostart file is still needed."""
     
-    _autostart(_get_items())
+    _autostart(_get_items(amount="y"))
     sys.exit(ec)
 
 def _proceed(msg):
@@ -190,8 +190,8 @@ def _is_encfs(epath):
 
 _items_cached = None
 
-def _get_items(mpoint=None, any=None):
-    """Get EncFS items where EncFS path or mount point equals 'path'."""
+def _get_items(mpoint=None, epath=None, anypath=None, amount=None):
+    """Get all EncFS items or those matching given attributes."""
     
     global _items_cached
     
@@ -201,11 +201,20 @@ def _get_items(mpoint=None, any=None):
         except gk.NoMatchError:
             _items_cached = []
     
-    return [i for i in _items_cached if
-                not (mpoint or any) or
-                mpoint and i.attributes["mount-point"] == mpoint or
-                (any and (i.attributes["encfs-path"] == any or
-                          i.attributes["mount-point"] == any))]
+    match = []
+    for item in _items_cached:
+        if mpoint and item.attributes["mount-point"] != mpoint:
+            continue
+        if epath and item.attributes["encfs-path"] != epath:
+            continue
+        if anypath and (item.attributes["mount-point"] != anypath and
+                        item.attributes["encfs-path"] != anypath):
+            continue
+        if amount and item.attributes["auto-mount"] != amount:
+            continue
+        match.append(item)
+    
+    return match
 
 def _autostart(enable):
     """Set up XDG autostart file."""
@@ -340,16 +349,18 @@ def remove_item(mpoint):
     return True
 
 def mount_items(path, autostart):
-    """Mount all items where the EncFS path or mount point equals 'path'."""
-
-    items = _get_items(any=path)
+    """Mount selected items.
+    
+    If `path` is set, mount only those items where the EncFS path or mount
+    point equals `path`. If `autostart` is True, mount only those items where
+    auto-mount is set to 'y'.
+    
+    """
+    items = _get_items(anypath=path, amount=(autostart and "y" or None))
 
     if not items:
         print(MSG_NO_MATCH)
         return False
-    
-    if autostart:
-        items = [i for i in items if i.attributes["auto-mount"] == "y"]
     
     for item in items:
         epath = item.attributes["encfs-path"]
