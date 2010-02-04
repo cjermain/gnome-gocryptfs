@@ -219,13 +219,14 @@ def _get_items(mpoint=None, epath=None, anypath=None, amount=None):
 def _autostart(enable):
     """Set up XDG autostart file."""
     
-    if TEST: # don't change this file in test mode
-        return
+    if TEST:
+        fname = os.path.join(os.path.curdir, "autostart.desktop")
+    else:
+        fname = os.path.join(xdg_ch, "autostart", "gnome-encfs.desktop")
 
-    fname = os.path.join(xdg_ch, "autostart", "gnome-encfs.desktop")
-
-    if not enable and os.path.exists(fname):
-        os.remove(fname)
+    if not enable:
+        if os.path.exists(fname):
+            os.remove(fname)
         return
     
     content = {
@@ -311,7 +312,6 @@ def edit_item(mpoint):
         
         # check item data
         for other in [i for i in items if i.item_id != item.item_id]:
-            print("cmp %s - %s" % (other.attributes["mount-point"], mpoint))
             if other.attributes["mount-point"] == mpoint:
                 _proceed("mount point already in use")
         if not _is_encfs(epath):
@@ -329,6 +329,9 @@ def edit_item(mpoint):
         info.set_secret(secret)
         gk.item_set_info_sync(KEYRING, item.item_id, info)
         
+        global _items_cached
+        _items_cached = None
+    
     return True
 
 def remove_item(mpoint):

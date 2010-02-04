@@ -115,9 +115,26 @@ expect "failing edit (3b->2) - mount point in use"
 $GENCFS -e $TENV/m3b --password p3 --epath $TENV/e3 --mpoint $TENV/m2 --proceed n --amount y
 expect "3 items (1,2,3b)"
 $GENCFS -l
+expect "autostart on"
+test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
+expect "2 succeeding edits"
+$GENCFS -e $TENV/m1 --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
+$GENCFS -e $TENV/m2 --password p2 --epath $TENV/e2 --mpoint $TENV/m2 --proceed n --amount n
+expect "autostart on"
+test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
+expect "autostart content"
+cat autostart.desktop
+expect "1 succeeding edits"
+$GENCFS -e $TENV/m3b --password p3 --epath $TENV/e3 --mpoint $TENV/m3b --proceed n --amount n
+expect "autostart off"
+test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 
 # clean up keyring
 $GENCFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
     while read MP ; do $GENCFS -r $MP ; done
 
+expect "no listed items"
+$GENCFS -l
+expect "autostart off"
+test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 
