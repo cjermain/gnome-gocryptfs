@@ -72,9 +72,11 @@ USAGE = """Usage: %prog --list
 DESCRIPTION = """Painlessly mount and manage EncFS folders using GNOME's
 keyring."""
 
-EPILOG = """gnome-encfs has two functionalities. First it stores EncFS paths,
-corresponding mount points and passwords in the GNOME keyring. Second it
-optionally mounts EncFS paths automatically on login to a GNOME session.
+EPILOG = """This tool stores EncFS paths,
+corresponding mount points as well as passwords in the GNOME keyring and
+optionally mounts EncFS paths automatically on login to a GNOME session (works
+only if gnome-encfs is installed in the system path, at /usr/bin or
+/usr/local/bin).
 """
 
 VERSION="0.1"
