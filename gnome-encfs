@@ -376,7 +376,7 @@ def mount_items(path, autostart):
         elif not os.path.isdir(mpoint):
             msg += "mount point does not exist or is not a directory"
         else:
-            cmd = ["encfs", "-S", epath, mpoint]
+            cmd = ["encfs", "-o", "nonempty", "-S", epath, mpoint]
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
             p.communicate(input="%s\n" % item.secret)
             msg += p.returncode and "FAILED" or "OK"
