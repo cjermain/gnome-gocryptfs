@@ -85,8 +85,26 @@ You can also  show, edit and remove EncFS folders handled by *gnome-enfs*:
       -e, --edit           edit an EncFS item in keyring
       -r, --remove         remove an EncFS item from keyring
     ...
-    
+
 Usage should be straight forward - otherwise [submit an issue][7].
+
+### Automatically unmount EncFS folders on logout
+
+Unfortunately there's no equivalent to GNOME's autostart scripts which could be
+used to automatically unmount your EncFS folders on logout (without shutting
+down). However, there's a manual solution using a [GDM hook script][gdm]:
+`/etc/gdm/PostSession/Default`. Open this file in an editor (requires *root*
+privileges) and add this line:
+
+    mount | grep "^encfs" | grep "user=$USER" | awk '{print $3}' | while read MPOINT ; do sudo -u $USER fusermount -u "$MPOINT" ; done
+
+This script is executed whenever you logout from GNOME. With this line, it
+looks for mounted EncFS folders of the user currently logging out. Then it
+unmounts each, using the `fusermount` command (note that this command is
+executed as *root*, that's why there is a `sudo -u $USER` before the
+`fusermount` command).
+
+[gdm]: http://library.gnome.org/admin/gdm/stable/configuration.html
 
 License
 -------
@@ -96,7 +114,6 @@ License
 [1]: http://www.arg0.net/encfs
 [2]: http://live.gnome.org/GnomeKeyring
 [3]: http://bitbucket.org/obensonne/gnome-encfs/get/tip.tar.gz
-[4]: 
 [5]: http://dropbox.com
 [6]: http://www.gnu.org/licenses/gpl.html
 [7]: http://bitbucket.org/obensonne/gnome-encfs/issues/?status=new&status=open
