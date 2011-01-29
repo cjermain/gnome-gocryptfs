@@ -3,21 +3,21 @@
 gnome-encfs
 ===========
 
-*gnome-encfs* integrates [EncFS][1] folders into the GNOME desktop by storing
-their passwords in the [keyring][2] and optionally mounting them at login using
-GNOME's autostart mechanism.
+*gnome-encfs* integrates [EncFS][efs] folders into the GNOME desktop by storing
+their passwords in the [keyring][gkr] and optionally mounting them at login
+using GNOME's autostart mechanism.
 
 *gnome-encfs* allows you to use strong passwords for EncFS folders while still
-mounting them painlessly (i.e. no password prompt).
-This is an advantage over automount solutions like *pam-encfs* and *pam-mount*
-which require to use the same password for EncFS folders as for your local user
-account. This is bad because local account passwords usually are weaker than
-those one should use for encrypting online stored data, e.g. in a [Dropbox][5].
+mounting them painlessly (i.e. no password prompt).  This is an advantage over
+automount solutions like *pam-encfs* and *pam-mount* which require to use the
+same password for EncFS folders as for your local user account. This is bad
+because local account passwords usually are weaker than those one should use
+for encrypting online stored data, e.g. in a [Dropbox][dbx].
 
 Download
 --------
 
-Download the [package][3] *or* checkout the source:
+Download the [package][dlp] *or* checkout the source:
 
     $ hg clone http://bitbucket.org/obensonne/gnome-encfs
 
@@ -26,11 +26,11 @@ Installation
 
     $ cd /path/to/gnome-encfs
     $ install gnome-encfs /usr/local/bin
-    
-**Note:** You can run *gnome-encfs* right from the extracted package but to make
-use of the automount feature at GNOME login, it must be placed somewhere in
-*PATH* (as configured during a login to GNOME). Using the install command above
-ensures this requirement is fulfilled.
+
+**Note:** You can run *gnome-encfs* right from the extracted package but to
+make use of the automount feature at GNOME login, it must be placed somewhere
+in *PATH* (as configured during a login to GNOME). Using the install command
+above ensures this requirement is fulfilled.
 
 Usage
 -----
@@ -43,15 +43,15 @@ mounted to `~/Private`. Make it known to *gnome-encfs*:
     $ gnome-encfs -a ~/.Private.encrypted ~/Private
     EncFS password: <enter encfs password>
     Mount at login [Y/n]: <say 'y' or 'n'>
-    
+
 This adds the EncFS path, its mount location and password to the GNOME keyring
 and sets up a GNOME autostart entry to mount it at GNOME login (if enabled).
 
 ### Mount an EncFS folder
 
-If you said *y* above to the login mount question, the EncFS folder
-gets mounted automatically at GNOME login. If you prefer to mount on demand,
-you do that with
+If you said *y* above to the login mount question, the EncFS folder gets
+mounted automatically at GNOME login. If you prefer to mount on demand, you do
+that with
 
      $ gnome-encfs -m ~/Private
 
@@ -67,15 +67,15 @@ Unmount as usual, using *fusermount*:
 You can also  show, edit and remove EncFS folders handled by *gnome-enfs*:
 
     $ gnome-encfs -h
-    
+
     Usage: gnome-encfs --list
            gnome-encfs --mount [ENCFS-PATH-or-MOUNT-POINT]
            gnome-encfs --add ENCFS-PATH MOUNT-POINT
            gnome-encfs --edit MOUNT-POINT
            gnome-encfs --remove MOUNT-POINT
-    
+
     Painlessly mount and manage EncFS folders using GNOME's keyring.
-    
+
     Options:
       --version            show program's version number and exit
       -h, --help           show this help message and exit
@@ -86,7 +86,7 @@ You can also  show, edit and remove EncFS folders handled by *gnome-enfs*:
       -r, --remove         remove an EncFS item from keyring
     ...
 
-Usage should be straight forward - otherwise [submit an issue][7].
+Usage should be straight forward - otherwise [submit an issue][itr].
 
 ### Automatically unmount EncFS folders on logout
 
@@ -94,9 +94,11 @@ Unfortunately there's no equivalent to GNOME's autostart scripts which could be
 used to automatically unmount your EncFS folders on logout (without shutting
 down). However, there's a manual solution using a [GDM hook script][gdm]:
 `/etc/gdm/PostSession/Default`. Open this file in an editor (requires *root*
-privileges) and add this line:
+privileges) and add these lines:
 
-    mount | grep "^encfs" | grep "user=$USER" | awk '{print $3}' | while read MPOINT ; do sudo -u $USER fusermount -u "$MPOINT" ; done
+    mount -t fuse.encfs | grep "user=$USER" | awk '{print $3}' | while read MPOINT ; do
+        sudo -u $USER fusermount -u "$MPOINT"
+    done
 
 This script is executed whenever you logout from GNOME. With this line, it
 looks for mounted EncFS folders of the user currently logging out. Then it
@@ -104,16 +106,19 @@ unmounts each, using the `fusermount` command (note that this command is
 executed as *root*, that's why there is a `sudo -u $USER` before the
 `fusermount` command).
 
-[gdm]: http://library.gnome.org/admin/gdm/stable/configuration.html
+This works independent of *gnome-encfs*, i.e. it unmounts **any** EncFS folder
+of the user logging out.
 
 License
 -------
 
-*gnome-encfs* is licensed as [GPL][6].
+*gnome-encfs* is licensed as [GPL][gpl].
 
-[1]: http://www.arg0.net/encfs
-[2]: http://live.gnome.org/GnomeKeyring
-[3]: http://bitbucket.org/obensonne/gnome-encfs/get/tip.tar.gz
-[5]: http://dropbox.com
-[6]: http://www.gnu.org/licenses/gpl.html
-[7]: http://bitbucket.org/obensonne/gnome-encfs/issues/?status=new&status=open
+[dbx]: http://dropbox.com
+[dlp]: http://bitbucket.org/obensonne/gnome-encfs/get/tip.tar.gz
+[efs]: http://www.arg0.net/encfs
+[gdm]: http://library.gnome.org/admin/gdm/stable/configuration.html
+[gkr]: http://live.gnome.org/GnomeKeyring
+[gpl]: http://www.gnu.org/licenses/gpl.html
+[itr]: http://bitbucket.org/obensonne/gnome-encfs/issues/?status=new&status=open
+
