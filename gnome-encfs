@@ -410,5 +410,5 @@ def main():
     
 if __name__ == '__main__':
     
-    ret = main() and 0 or 1
-    _exit(ret)
+    ret = main()
+    _exit(int(not ret))
