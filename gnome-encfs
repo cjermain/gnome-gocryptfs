@@ -250,10 +250,15 @@ def _autostart(enable):
 # actions
 # =============================================================================
 
-def list_items():
+def list_items(path=None):
     """List EncFS items in keyring."""
     
-    items = _get_items()
+    items = _get_items(anypath=path)
+
+    if not items and path:
+        print(MSG_NO_MATCH)
+        return False
+
     for item in items:
         epath = item.attributes["encfs-path"]
         mpoint = item.attributes["mount-point"]
@@ -400,7 +405,7 @@ def main():
     if opts.add:
         ok = add_item(opts.p1, opts.p2)
     elif opts.list:
-        ok = list_items()
+        ok = list_items(opts.p1)
     elif opts.mount:
         ok = mount_items(opts.p1, opts.autostart)
     elif opts.edit:
