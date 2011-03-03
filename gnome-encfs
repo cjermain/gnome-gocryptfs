@@ -363,7 +363,7 @@ def mount_items(path, autostart):
     """
     items = _get_items(anypath=path, amount=(autostart and "y" or None))
 
-    if not items:
+    if not items and path:
         print(MSG_NO_MATCH)
         return False
     
