@@ -1,11 +1,5 @@
 <!-- -*- markdown -*- -->
 
-<!-- = Flattr gnome-encfs at https://flattr.com/thing/142770/gnome-encfs = -->
-<p style="float: right;"><a href="https://flattr.com/thing/142770/gnome-encfs"
-target="_blank"><img src="http://api.flattr.com/button/flattr-badge-large.png"
-alt="Flattr this" title="Flattr this" border="0" /></a></p>
-<!-- ===================================================================== -->
-
 gnome-encfs
 ===========
 
@@ -19,6 +13,11 @@ automount solutions like *pam-encfs* and *pam-mount* which require to use the
 same password for EncFS folders as for your local user account. This is bad
 because local account passwords usually are weaker than those one should use
 for encrypting online stored data, e.g. in a [Dropbox][dbx].
+
+[![Flattr this][flattr-img]][flattr-url]
+
+[flattr-url]: http://flattr.com/thing/142770/gnome-encfs
+[flattr-img]: http://api.flattr.com/button/flattr-badge-large.png "Flattr this"
 
 Download
 --------
