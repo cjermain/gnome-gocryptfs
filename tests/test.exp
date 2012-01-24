@@ -97,7 +97,8 @@ Mounting ./tenv/m1: mount point already in use
   mount point    : ./tenv/m1
   mount at login : yes
 # EXPECT: 1 failing mount (3a) - wrong password
-Mounting ./tenv/m3a: Error decoding volume key, password incorrect
+Error decoding volume key, password incorrect
+Mounting ./tenv/m3a: FAILED
 # EXPECT: no mounted paths
 # EXPECT: 3 items (1,2,3b)
 * encfs path     : ./tenv/e3
