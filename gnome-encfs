@@ -202,6 +202,7 @@ def _get_items(mpoint=None, epath=None, anypath=None, amount=None):
             _items_cached = gk.find_items_sync(ITYPE, GENCFS_ATTR)
         except gk.NoMatchError:
             _items_cached = []
+        _items_cached.sort(key=lambda x: x.attributes["mount-point"])
 
     match = []
     for item in _items_cached:

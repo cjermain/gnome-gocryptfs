@@ -12,103 +12,103 @@ Warning: mount point already in keyring
   mount at login : yes
 # EXPECT: succeeding add (2)
 # EXPECT: 2 listed items (1,2)
-* encfs path     : ./tenv/e2
-  mount point    : ./tenv/m2
-  mount at login : yes
 * encfs path     : ./tenv/e1
   mount point    : ./tenv/m1
+  mount at login : yes
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
   mount at login : yes
 # EXPECT: succeeding add (3a)
 # EXPECT: 3 listed items (1,2,3a)
-* encfs path     : ./tenv/e3
-  mount point    : ./tenv/m3a
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
   mount at login : yes
 * encfs path     : ./tenv/e2
   mount point    : ./tenv/m2
   mount at login : yes
-* encfs path     : ./tenv/e1
-  mount point    : ./tenv/m1
+* encfs path     : ./tenv/e3
+  mount point    : ./tenv/m3a
   mount at login : yes
 # EXPECT: succeeding add (3b)
 # EXPECT: 4 listed items (1,2,3a,3b)
-* encfs path     : ./tenv/e3
-  mount point    : ./tenv/m3b
-  mount at login : yes
-* encfs path     : ./tenv/e3
-  mount point    : ./tenv/m3a
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
   mount at login : yes
 * encfs path     : ./tenv/e2
   mount point    : ./tenv/m2
   mount at login : yes
-* encfs path     : ./tenv/e1
-  mount point    : ./tenv/m1
+* encfs path     : ./tenv/e3
+  mount point    : ./tenv/m3a
+  mount at login : yes
+* encfs path     : ./tenv/e3
+  mount point    : ./tenv/m3b
   mount at login : yes
 # EXPECT: 2 succeeding mounts (3a,3b)
-Mounting ./tenv/m3b: OK
 Mounting ./tenv/m3a: OK
+Mounting ./tenv/m3b: OK
 # EXPECT: 2 mounted paths (3a,3b)
-encfs on ./tenv/m3b type fuse.encfs (rw,nosuid,nodev,default_permissions,)
 encfs on ./tenv/m3a type fuse.encfs (rw,nosuid,nodev,default_permissions,)
+encfs on ./tenv/m3b type fuse.encfs (rw,nosuid,nodev,default_permissions,)
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 4 succeeding mounts (1,2,3a,3b)
-Mounting ./tenv/m3b: OK
-Mounting ./tenv/m3a: OK
-Mounting ./tenv/m2: OK
 Mounting ./tenv/m1: OK
+Mounting ./tenv/m2: OK
+Mounting ./tenv/m3a: OK
+Mounting ./tenv/m3b: OK
 # EXPECT: 4 mounted paths (1,2,3a,3b)
-encfs on ./tenv/m3b type fuse.encfs (rw,nosuid,nodev,default_permissions,)
-encfs on ./tenv/m3a type fuse.encfs (rw,nosuid,nodev,default_permissions,)
-encfs on ./tenv/m2 type fuse.encfs (rw,nosuid,nodev,default_permissions,)
 encfs on ./tenv/m1 type fuse.encfs (rw,nosuid,nodev,default_permissions,)
+encfs on ./tenv/m2 type fuse.encfs (rw,nosuid,nodev,default_permissions,)
+encfs on ./tenv/m3a type fuse.encfs (rw,nosuid,nodev,default_permissions,)
+encfs on ./tenv/m3b type fuse.encfs (rw,nosuid,nodev,default_permissions,)
 # EXPECT: 4 failing mounts - already mounted
-Mounting ./tenv/m3b: mount point already in use
-Mounting ./tenv/m3a: mount point already in use
-Mounting ./tenv/m2: mount point already in use
 Mounting ./tenv/m1: mount point already in use
+Mounting ./tenv/m2: mount point already in use
+Mounting ./tenv/m3a: mount point already in use
+Mounting ./tenv/m3b: mount point already in use
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 3 items (1,2,3b)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : yes
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : yes
 * encfs path     : ./tenv/e3
   mount point    : ./tenv/m3b
   mount at login : yes
-* encfs path     : ./tenv/e2
-  mount point    : ./tenv/m2
-  mount at login : yes
+# EXPECT: 3 items (1,2,3a)
 * encfs path     : ./tenv/e1
   mount point    : ./tenv/m1
   mount at login : yes
-# EXPECT: 3 items (1,2,3a)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : yes
 * encfs path     : ./tenv/e3
   mount point    : ./tenv/m3a
   mount at login : yes
-* encfs path     : ./tenv/e2
-  mount point    : ./tenv/m2
-  mount at login : yes
+# EXPECT: 3 items (1,2,3a)
 * encfs path     : ./tenv/e1
   mount point    : ./tenv/m1
   mount at login : yes
-# EXPECT: 3 items (1,2,3a)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : yes
 * encfs path     : ./tenv/e3
   mount point    : ./tenv/m3a
-  mount at login : yes
-* encfs path     : ./tenv/e2
-  mount point    : ./tenv/m2
-  mount at login : yes
-* encfs path     : ./tenv/e1
-  mount point    : ./tenv/m1
   mount at login : yes
 # EXPECT: 1 failing mount (3a) - wrong password
 Error decoding volume key, password incorrect
 Mounting ./tenv/m3a: FAILED
 # EXPECT: no mounted paths
 # EXPECT: 3 items (1,2,3b)
-* encfs path     : ./tenv/e3
-  mount point    : ./tenv/m3b
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
   mount at login : yes
 * encfs path     : ./tenv/e2
   mount point    : ./tenv/m2
   mount at login : yes
-* encfs path     : ./tenv/e1
-  mount point    : ./tenv/m1
+* encfs path     : ./tenv/e3
+  mount point    : ./tenv/m3b
   mount at login : yes
 # EXPECT: 1 succeeding mount (3b)
 Mounting ./tenv/m3b: OK
@@ -118,14 +118,14 @@ encfs on ./tenv/m3b type fuse.encfs (rw,nosuid,nodev,default_permissions,)
 # EXPECT: failing edit (3b->2) - mount point in use
 Warning: mount point already in use
 # EXPECT: 3 items (1,2,3b)
-* encfs path     : ./tenv/e3
-  mount point    : ./tenv/m3b
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
   mount at login : yes
 * encfs path     : ./tenv/e2
   mount point    : ./tenv/m2
   mount at login : yes
-* encfs path     : ./tenv/e1
-  mount point    : ./tenv/m1
+* encfs path     : ./tenv/e3
+  mount point    : ./tenv/m3b
   mount at login : yes
 # EXPECT: autostart on
 autostart on
