@@ -136,7 +136,6 @@ autostart on
 Comment=Mount EncFS folders configured in GNOME's keyring
 Name=EncFS
 Exec=gnome-encfs autostart
-Encoding=UTF-8
 Version=1.0
 Type=Application
 X-GNOME-Autostart-enabled=true
