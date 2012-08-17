@@ -1,6 +1,6 @@
 #!/bin/sh
 
-sh test.sh | sed -e "s,/.*/tenv,./tenv," > test.out
+LC_MESSAGES=C sh test.sh | sed -e "s,/.*/tenv,./tenv," > test.out
 
 ERR=`diff -Nur test.exp test.out`
 
