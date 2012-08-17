@@ -10,7 +10,9 @@ mounting them painlessly (i.e. no password prompt).  This is an advantage over
 automount solutions like *pam-encfs* and *pam-mount* which require to use the
 same password for EncFS folders as for your local user account. This is bad
 because local account passwords usually are weaker than those one should use
-for encrypting online stored data, e.g. in a [Dropbox][dbx].
+for encrypting online stored data, e.g. in a [Dropbox][dbx]. In this case, you
+can also move your EncFs config files (.encfs5 or .encfs6.xml) outside their
+EncFS folders to increase security so they are not stored online (See below).
 
 [![Flattr this][flattr-img]][flattr-url]
 
@@ -49,6 +51,25 @@ mounted to `~/Private`. Make it known to *gnome-encfs*:
 
 This adds the EncFS path, its mount location and password to the GNOME keyring
 and sets up a GNOME autostart entry to mount it at GNOME login (if enabled).
+
+### Add an EncFS folder with a custom location EncFs config file
+
+Suppose you have an EncFS folder at `~/.Private.encrypted` which should get
+mounted to `~/Private`.
+
+And suppose you move the EncFS config file (.encfs5 or .encfs6.xml), from 
+`~/.Private.encrypted/.encfs6.xml` to `~/Private_encfs6.xml`.
+
+Make it known to *gnome-encfs*:
+
+    $ gnome-encfs -a ~/.Private.encrypted ~/Private
+    Custom EncFS config file path [**Default location**]: ~/Private_encfs6.xml
+    EncFS password: <enter encfs password>
+    Mount at login [Y/n]: <say 'y' or 'n'>
+
+This adds the EncFS path, its mount location, the location of its EncFS config
+file and password to the GNOME keyring and sets up a GNOME autostart entry to
+mount it at GNOME login (if enabled).
 
 ### Mount an EncFS folder
 

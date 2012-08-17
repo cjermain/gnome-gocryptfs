@@ -145,6 +145,54 @@ Icon=folder
 # EXPECT: 1 succeeding edits
 # EXPECT: autostart off
 autostart off
+# EXPECT: succeeding add with a custom EncFS5 config file (1)
+# EXPECT: 1 listed item (1)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : no
+  Custom EncFS config file path : ./tenv/e1_encfs5
+# EXPECT: 1 succeeding mounts (1)
+Mounting ./tenv/e1_encfs5: OK
+# EXPECT: 1 mounted paths (1)
+encfs on ./tenv/m1 type fuse.encfs (rw,nosuid,nodev,default_permissions,)
+# EXPECT: no mounted paths - all unmounted
+# EXPECT: succeeding edit to set back EncFS5 config file to its default location (1)
+# EXPECT: 1 listed item (1)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : no
+# EXPECT: succeeding edit with a custom EncFS5 config file (1)
+# EXPECT: 1 listed item (1)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : no
+  Custom EncFS config file path : ./tenv/e1_encfs5
+# EXPECT: succeeding remove (1)
+# EXPECT: 0 items
+# EXPECT: succeeding add with a custom EncFS6 config file (1)
+# EXPECT: 1 listed item (2)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : no
+  Custom EncFS config file path : ./tenv/e2_encfs6.xml
+# EXPECT: 1 succeeding mounts (2)
+Mounting ./tenv/e2_encfs6.xml: OK
+# EXPECT: 1 mounted paths (2)
+encfs on ./tenv/m2 type fuse.encfs (rw,nosuid,nodev,default_permissions,)
+# EXPECT: no mounted paths - all unmounted
+# EXPECT: succeeding edit to set back EncFS6 config file to its default location (2)
+# EXPECT: 1 listed item (2)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : no
+# EXPECT: succeeding edit with a custom EncFS6 config file (2)
+# EXPECT: 1 listed item (2)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : no
+  Custom EncFS config file path : ./tenv/e2_encfs6.xml
+# EXPECT: succeeding remove (2)
+# EXPECT: 0 items
 # EXPECT: no listed items
 # EXPECT: autostart off
 autostart off

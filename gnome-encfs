@@ -47,6 +47,7 @@ class preset:
     epath = None
     mpoint = None
     amount = None
+    encfs_config =None
 
 # =============================================================================
 # constants
@@ -113,6 +114,8 @@ def _options():
                   help="Input for mount point edit")
     og.add_option("", "--amount", default=None,
                   help="Input for auto mount question")
+    og.add_option("", "--encfs-config", default=None,
+                  help="Input for custom EncFS config file path (Use 'default' to reset path to its default value during an edit)")
     op.add_option_group(og)
 
     opts, args = op.parse_args()
@@ -149,6 +152,7 @@ def _options():
     preset.epath = opts.epath
     preset.mpoint = opts.mpoint
     preset.amount = opts.amount
+    preset.encfs_config = opts.encfs_config
 
     return opts
 
@@ -172,6 +176,21 @@ def _pathify(path):
     path = os.path.realpath(path)
     return path
 
+def _setup_env(encfs_config):
+    """Set up a custom environnemnt for encfs process"""
+
+    custom_env = None
+    if encfs_config:
+        custom_env = os.environ.copy()
+        cmd = ["file", "-b", "--mime-type", encfs_config]
+        p = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        mime_type = p.communicate()[0].strip()
+        if mime_type == 'application/xml':
+            custom_env["ENCFS6_CONFIG"] = encfs_config
+        else:
+            custom_env["ENCFS5_CONFIG"] = encfs_config
+    return custom_env
+
 def _is_mounted(mpoint):
     """Check of something is mounted at given mount point."""
 
@@ -182,11 +201,12 @@ def _is_mounted(mpoint):
     points = [os.path.abspath(p) for p in points]
     return os.path.abspath(mpoint) in points
 
-def _is_encfs(epath):
+def _is_encfs(epath, encfs_config=None):
     """Check if 'epath' points to an EncFS directory."""
 
+    encfs_env = _setup_env(encfs_config)
     p = subprocess.Popen(["encfsctl", "info", epath], stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
+                         stderr=subprocess.PIPE, env=encfs_env)
     p.communicate()
     return p.returncode == 0
 
@@ -264,26 +284,45 @@ def list_items(path=None):
         epath = item.attributes["encfs-path"]
         mpoint = item.attributes["mount-point"]
         amount = item.attributes["auto-mount"]
+        encfs_config = item.attributes.get("encfs-config", None)
         print("* encfs path     : %s" % epath)
         print("  mount point    : %s" % mpoint)
         print("  mount at login : %s" % (amount == "y" and "yes" or "no"))
+        if encfs_config:
+            print("  Custom EncFS config file path : %s" % encfs_config)
 
     return True
 
 def add_item(epath, mpoint):
     """Add new EncFS item to keyring."""
 
-    if not _is_encfs(epath):
-        _proceed("no EncFS at given path")
     if not os.path.isdir(mpoint):
         _proceed("mount point is not a directory")
     if _get_items(mpoint=mpoint):
         _proceed("mount point already in keyring")
+    
+    encfs_config = None
+    if not _is_encfs(epath):
+        # Either epath is not an EncFS stash, or EncFS config file is elsewhere
+        encfs_config = preset.encfs_config or raw_input("Custom EncFS config file path [**Default location**]: ") or None
+        if ''.join(encfs_config).strip().lower() == "default":
+            encfs_config = None
+        if encfs_config:
+            encfs_config = _pathify(encfs_config)
+            if not os.path.isfile(encfs_config):
+                _proceed("Custom EncFS config file path is not a file")
+    if not _is_encfs(epath, encfs_config):
+        _proceed("no EncFS at given path")
 
     secret = preset.password or getpass.getpass("EncFS password: ")
     amount = preset.amount or raw_input("Mount at login [Y/n]: ") or "y"
     amount = amount.strip()[0].lower() == "y" and "y" or "n"
-    attr = {"encfs-path": epath, "mount-point": mpoint, "auto-mount": amount}
+    if encfs_config:
+        attr = {"encfs-path": epath, "mount-point": mpoint,
+                "auto-mount": amount, "encfs-config": encfs_config}
+    else:
+        attr = {"encfs-path": epath, "mount-point": mpoint,
+                "auto-mount": amount}
     attr.update(GENCFS_ATTR)
     name = "EncFS mount at %s" % mpoint
     gk.item_create_sync(KEYRING, ITYPE, name, attr, secret, False)
@@ -309,20 +348,33 @@ def edit_item(mpoint):
         epath = item.attributes["encfs-path"]
         mpoint = item.attributes["mount-point"]
         amount = item.attributes["auto-mount"]
+        encfs_config = item.attributes.get("encfs-config", "default")
+            
         epath = preset.epath or raw_input("EncFS path [%s]: " % epath) or epath
         mpoint = preset.mpoint or raw_input("Mount point [%s]: " % mpoint) or mpoint
+        hint = encfs_config if (encfs_config != "default")  else "**Default location**"
+        encfs_config = preset.encfs_config \
+                        or raw_input("Custom EncFS config file path - Type 'default' for the default " +
+                                     "location under EncFS path [%s]: " % hint) \
+                        or encfs_config
+        if ''.join(encfs_config).strip().lower() == "default":
+            encfs_config = None
         secret = preset.password or getpass.getpass("Password [**current**]: ") or item.secret
         hint = amount == "y" and "Y/n" or "y/N"
         amount = preset.amount or raw_input("Mount at login [%s]: " % hint) or amount
         amount = amount.strip()[0].lower() == "y" and "y" or "n"
         mpoint = _pathify(mpoint)
         epath = _pathify(epath)
-
+        if encfs_config:
+            encfs_config = _pathify(encfs_config)
+        
         # check item data
         for other in [i for i in items if i.item_id != item.item_id]:
             if other.attributes["mount-point"] == mpoint:
                 _proceed("mount point already in use")
-        if not _is_encfs(epath):
+        if encfs_config and not os.path.isfile(encfs_config):
+            _proceed("EncFS config file path is not a file")
+        if not _is_encfs(epath, encfs_config):
             _proceed("no EncFS at given path")
         if not os.path.isdir(mpoint):
             _proceed("mount point is not a directory")
@@ -332,6 +384,8 @@ def edit_item(mpoint):
         attributes["encfs-path"] = epath
         attributes["mount-point"] = mpoint
         attributes["auto-mount"] = amount
+        if encfs_config:
+            attributes["encfs-config"] = encfs_config
         gk.item_set_attributes_sync(KEYRING, item.item_id, attributes)
         info = gk.item_get_info_sync(KEYRING, item.item_id)
         info.set_secret(secret)
@@ -378,15 +432,22 @@ def mount_items(path, autostart):
     for item in items:
         epath = item.attributes["encfs-path"]
         mpoint = item.attributes["mount-point"]
-        msg = "Mounting %s at %s: " % (epath, mpoint)
+        encfs_config = item.attributes.get("encfs-config", None)
+
+        if encfs_config:
+            msg = "Mounting %s at %s with custom EncFS config file %s: " % (epath, mpoint, encfs_config)
+        else:
+            msg = "Mounting %s at %s: " % (epath, mpoint)
+        
         if _is_mounted(mpoint):
             msg += "mount point already in use"
         elif not os.path.isdir(mpoint):
             msg += "mount point does not exist or is not a directory"
             rc = False
         else:
+            encfs_env = _setup_env(encfs_config)
             cmd = ["encfs", "-o", "nonempty", "-S", epath, mpoint]
-            p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, env=encfs_env)
             p.communicate(input="%s\n" % item.secret)
             msg += p.returncode and "FAILED" or "OK"
             rc &= not p.returncode
