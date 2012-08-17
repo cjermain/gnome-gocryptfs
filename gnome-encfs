@@ -160,7 +160,7 @@ def _exit(ec):
 
 def _proceed(msg):
     print("Warning: %s" % msg)
-    proceed = preset.proceed or raw_input("Proceed [y/N]: ")
+    proceed = preset.proceed or raw_input("Proceed [y/N]: ") or "n"
     if proceed.strip()[0].lower() != "y":
         _exit(2)
 
