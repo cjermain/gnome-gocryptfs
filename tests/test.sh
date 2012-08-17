@@ -36,7 +36,7 @@ expect "1 listed item (1)"
 $GENCFS -l
 
 expect "failing add - mount point in use"
-$GENCFS -a ./tenv/e1 ./tenv/m1 --password p1 --proceed n --amount y
+$GENCFS -a $TENV/e1 $TENV/m1 --password p1 --proceed n --amount y
 expect "1 listed item (1)"
 $GENCFS -l
 
@@ -56,7 +56,7 @@ expect "4 listed items (1,2,3a,3b)"
 $GENCFS -l
 
 expect "2 succeeding mounts (3a,3b)"
-$GENCFS -m ./tenv/e3
+$GENCFS -m $TENV/e3
 expect "2 mounted paths (3a,3b)"
 mount | grep "/tenv/m[0-9]" | sed -e "s/user=\w\+//"
 
