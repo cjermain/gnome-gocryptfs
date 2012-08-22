@@ -155,7 +155,8 @@ def _options():
 def _exit(ec):
     """Exit with additional check if autostart file is still needed."""
 
-    _autostart(_get_items(amount="y"))
+    if ec != 2:
+        _autostart(_get_items(amount="y"))
     sys.exit(ec)
 
 def _proceed(msg):
@@ -420,5 +421,8 @@ def main():
     
 if __name__ == '__main__':
 
-    ret = main()
-    _exit(int(not ret))
+    try:
+        ret = int(not main())
+    except gk.CancelledError:
+        ret = 2
+    _exit(ret)
