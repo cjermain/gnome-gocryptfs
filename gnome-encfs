@@ -82,6 +82,14 @@ only if gnome-encfs is installed in the system path, at /usr/bin or
 
 VERSION="0.1"
 
+# bitwise or'able return codes
+RC_OK = 0
+RC_MOUNT_FAILED = 1
+RC_KEYRING_LOCKED = 2
+RC_UNKNOWN_ITEM = 4
+RC_INVALID_PATH = 8
+RC_MOUNT_POINT_IN_USE = 16
+
 # =============================================================================
 # helper
 # =============================================================================
@@ -156,11 +164,12 @@ def _options():
 
     return opts
 
-def _exit(ec):
+def _exit(rc):
     """Exit with additional check if autostart file is still needed."""
 
-    _autostart(_get_items(amount="y"))
-    sys.exit(ec)
+    if rc != RC_KEYRING_LOCKED: # getting items requires an unlocked keyring
+        _autostart(_get_items(amount="y"))
+    sys.exit(rc)
 
 def _proceed(msg):
     print("Warning: %s" % msg)
@@ -278,7 +287,7 @@ def list_items(path=None):
 
     if not items and path:
         print(MSG_NO_MATCH)
-        return False
+        return RC_UNKNOWN_ITEM
 
     for item in items:
         epath = item.attributes["encfs-path"]
@@ -291,7 +300,7 @@ def list_items(path=None):
         if encfs_config:
             print("  Custom EncFS config file path : %s" % encfs_config)
 
-    return True
+    return RC_OK
 
 def add_item(epath, mpoint):
     """Add new EncFS item to keyring."""
@@ -330,7 +339,7 @@ def add_item(epath, mpoint):
     global _items_cached
     _items_cached = None
 
-    return True
+    return RC_OK
 
 def edit_item(mpoint):
     """Edit EncFS item in keyring."""
@@ -340,7 +349,7 @@ def edit_item(mpoint):
 
     if not edits:
         print(MSG_NO_MATCH)
-        return False
+        return RC_UNKNOWN_ITEM
 
     for item in edits:
 
@@ -394,7 +403,7 @@ def edit_item(mpoint):
         global _items_cached
         _items_cached = None
 
-    return True
+    return RC_OK
 
 def remove_item(mpoint):
     """Remove EncFS item from keyring."""
@@ -403,7 +412,7 @@ def remove_item(mpoint):
 
     if not items:
         print(MSG_NO_MATCH)
-        return False
+        return RC_UNKNOWN_ITEM
 
     for item in items:
         gk.item_delete_sync(KEYRING, item.item_id)
@@ -411,7 +420,7 @@ def remove_item(mpoint):
     global _items_cached
     _items_cached = None
 
-    return True
+    return RC_OK
 
 def mount_items(path, autostart):
     """Mount selected items.
@@ -420,14 +429,17 @@ def mount_items(path, autostart):
     point equals `path`. If `autostart` is True, mount only those items where
     auto-mount is set to 'y'.
 
+    Return true if all items have been mounted successfully and false
+    otherwise.
+
     """
     items = _get_items(anypath=path, amount=(autostart and "y" or None))
 
     if not items and path:
         print(MSG_NO_MATCH)
-        return False
+        return RC_UNKNOWN_ITEM
 
-    rc = True
+    rc = 0
 
     for item in items:
         epath = item.attributes["encfs-path"]
@@ -441,16 +453,17 @@ def mount_items(path, autostart):
         
         if _is_mounted(mpoint):
             msg += "mount point already in use"
+            rc |= RC_MOUNT_POINT_IN_USE
         elif not os.path.isdir(mpoint):
             msg += "mount point does not exist or is not a directory"
-            rc = False
+            rc |= RC_INVALID_PATH
         else:
             encfs_env = _setup_env(encfs_config)
             cmd = ["encfs", "-o", "nonempty", "-S", epath, mpoint]
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, env=encfs_env)
             p.communicate(input="%s\n" % item.secret)
             msg += p.returncode and "FAILED" or "OK"
-            rc &= not p.returncode
+            rc |= 0 if p.returncode == os.EX_OK else RC_MOUNT_FAILED
 
         print(msg)
 
@@ -465,21 +478,23 @@ def main():
     opts = _options()
 
     if opts.add:
-        ok = add_item(opts.p1, opts.p2)
+        rc = add_item(opts.p1, opts.p2)
     elif opts.list:
-        ok = list_items(opts.p1)
+        rc = list_items(opts.p1)
     elif opts.mount:
-        ok = mount_items(opts.p1, opts.autostart)
+        rc = mount_items(opts.p1, opts.autostart)
     elif opts.edit:
-        ok = edit_item(opts.p1)
+        rc = edit_item(opts.p1)
     elif opts.remove:
-        ok = remove_item(opts.p1)
+        rc = remove_item(opts.p1)
     else:
         assert False
 
-    return ok
-    
-if __name__ == '__main__':
+    return rc
 
-    ret = main()
-    _exit(int(not ret))
+if __name__ == '__main__':
+    try:
+        rc = main()
+    except gk.CancelledError:
+        rc = RC_KEYRING_LOCKED
+    _exit(rc)
