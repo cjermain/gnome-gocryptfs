@@ -177,8 +177,8 @@ def _exit(rc):
 
 def _proceed(msg):
     print("Warning: %s" % msg)
-    proceed = preset.proceed or raw_input("Proceed [y/N]: ")
-    if not proceed or proceed.strip()[0].lower() != "y":
+    proceed = preset.proceed or raw_input("Proceed [y/N]: ") or "n"
+    if proceed.strip()[0].lower() != "y":
         _exit(2)
 
 def _pathify(path):
@@ -193,7 +193,11 @@ def _encfs_env(econfig):
     """Get environment for encfs commands."""
     env = os.environ.copy()
     if econfig != "-":
-        env["ENCFS6_CONFIG"] = econfig
+        cmd = ["file", "-b", "--mime-type", econfig]
+        p = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        mime_type = p.communicate()[0].strip()
+        v = 6 if mime_type == 'application/xml' else 5
+        env["ENCFS%s_CONFIG" % v] = econfig
     return env
 
 def _is_mounted(mpoint):

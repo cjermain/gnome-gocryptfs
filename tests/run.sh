@@ -1,8 +1,8 @@
 #!/bin/sh
 
-sh test.sh | sed -e "s,/.*/tenv,./tenv," > test.out
+LC_MESSAGES=C sh test.sh | sed -e "s,/.*/tenv,./tenv," > test.out
 
-ERR=`diff -Nur test.exp test.out`
+ERR=`diff -u test.exp test.out`
 
 if [ -n "$ERR" ] ; then
 	echo "$ERR" > test.err

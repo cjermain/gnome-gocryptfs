@@ -171,6 +171,56 @@ Icon=folder
 # EXPECT: 1 succeeding edits
 # EXPECT: autostart off
 autostart off
+# EXPECT: succeeding add (1) with custom v5 config file location
+# EXPECT: 1 listed item (1)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : no
+  encfs config   : ./tenv/e1_encfs5
+# EXPECT: 1 succeeding mounts (1)
+Mounting ./tenv/m1: OK
+# EXPECT: 1 mounted paths (1)
+encfs on ./tenv/m1 type fuse.encfs
+# EXPECT: no mounted paths - all unmounted
+# EXPECT: succeeding edit (1) reset config file location
+# EXPECT: 1 listed item (1)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : no
+  encfs config   : -
+# EXPECT: succeeding edit (1) with custom v5 config file location
+# EXPECT: 1 listed item (1)
+* encfs path     : ./tenv/e1
+  mount point    : ./tenv/m1
+  mount at login : no
+  encfs config   : ./tenv/e1_encfs5
+# EXPECT: succeeding remove (1)
+# EXPECT: 0 items
+# EXPECT: succeeding add (1) with custom v6 config file location
+# EXPECT: 1 listed item (2)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : no
+  encfs config   : ./tenv/e2_encfs6.xml
+# EXPECT: 1 succeeding mounts (2)
+Mounting ./tenv/m2: OK
+# EXPECT: 1 mounted paths (2)
+encfs on ./tenv/m2 type fuse.encfs
+# EXPECT: no mounted paths - all unmounted
+# EXPECT: succeeding edit (2) reset config file location
+# EXPECT: 1 listed item (2)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : no
+  encfs config   : -
+# EXPECT: succeeding edit (2) with custom v6 config file locations
+# EXPECT: 1 listed item (2)
+* encfs path     : ./tenv/e2
+  mount point    : ./tenv/m2
+  mount at login : no
+  encfs config   : ./tenv/e2_encfs6.xml
+# EXPECT: succeeding remove (2)
+# EXPECT: 0 items
 # EXPECT: no listed items
 # EXPECT: autostart off
 autostart off

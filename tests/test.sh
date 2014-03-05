@@ -40,7 +40,7 @@ expect "1 listed item (1)"
 $GENCFS -l
 
 expect "failing add - mount point in use"
-$GENCFS -a ./tenv/e1 ./tenv/m1 --econfig "-" --password p1 --proceed n --amount y
+$GENCFS -a $TENV/e1 $TENV/m1 --econfig "-" --password p1 --proceed n --amount y
 expect "1 listed item (1)"
 $GENCFS -l
 
@@ -60,7 +60,7 @@ expect "4 listed items (1,2,3a,3b)"
 $GENCFS -l
 
 expect "2 succeeding mounts (3a,3b)"
-$GENCFS -m ./tenv/e3
+$GENCFS -m $TENV/e3
 expect "2 mounted paths (3a,3b)"
 mounts
 
@@ -134,11 +134,90 @@ expect "autostart off"
 test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 
 # clean up keyring
+
+$GENCFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+    while read MP ; do $GENCFS -r $MP ; done
+
+# test custom EncFS config file location (v5)
+
+expect "succeeding add (1) with custom v5 config file location"
+mv $TENV/e1/.encfs5 $TENV/e1_encfs5
+$GENCFS -a $TENV/e1 $TENV/m1 --econfig $TENV/e1_encfs5 --password p1 --proceed n --amount n
+expect "1 listed item (1)"
+$GENCFS -l
+
+expect "1 succeeding mounts (1)"
+$GENCFS -m $TENV/e1
+expect "1 mounted paths (1)"
+mounts
+
+for MPOINT in $TENV/m1* ; do
+        fusermount -u $MPOINT 2>&1
+done
+expect "no mounted paths - all unmounted"
+mounts
+
+expect "succeeding edit (1) reset config file location"
+mv $TENV/e1_encfs5 $TENV/e1/.encfs5
+$GENCFS -e $TENV/m1 --econfig "-" --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
+expect "1 listed item (1)"
+$GENCFS -l
+
+expect "succeeding edit (1) with custom v5 config file location"
+mv $TENV/e1/.encfs5 $TENV/e1_encfs5
+$GENCFS -e $TENV/m1 --econfig $TENV/e1_encfs5 --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
+expect "1 listed item (1)"
+$GENCFS -l
+
+expect "succeeding remove (1)"
+$GENCFS -r $TENV/m1
+mv $TENV/e1_encfs5 $TENV/e1/.encfs5
+expect "0 items"
+$GENCFS -l
+
+# test custom EncFS config file location (v6)
+
+expect "succeeding add (1) with custom v6 config file location"
+mv $TENV/e2/.encfs6.xml $TENV/e2_encfs6.xml
+$GENCFS -a $TENV/e2 $TENV/m2 --econfig $TENV/e2_encfs6.xml --password p2 --proceed n --amount n
+expect "1 listed item (2)"
+$GENCFS -l
+
+expect "1 succeeding mounts (2)"
+$GENCFS -m $TENV/e2
+expect "1 mounted paths (2)"
+mounts
+
+for MPOINT in $TENV/m2* ; do
+        fusermount -u $MPOINT 2>&1
+done
+expect "no mounted paths - all unmounted"
+mounts
+
+expect "succeeding edit (2) reset config file location"
+mv $TENV/e2_encfs6.xml $TENV/e2/.encfs6.xml
+$GENCFS -e $TENV/m2 --econfig "-" --password p2 --epath $TENV/e2 --mpoint $TENV/m2 --proceed n --amount n
+expect "1 listed item (2)"
+$GENCFS -l
+
+expect "succeeding edit (2) with custom v6 config file locations"
+mv $TENV/e2/.encfs6.xml $TENV/e2_encfs6.xml
+$GENCFS -e $TENV/m2 --econfig $TENV/e2_encfs6.xml --password p2 --epath $TENV/e2 --mpoint $TENV/m2 --proceed n --amount n
+expect "1 listed item (2)"
+$GENCFS -l
+
+expect "succeeding remove (2)"
+$GENCFS -r $TENV/m2
+mv $TENV/e2_encfs6.xml $TENV/e2/.encfs6.xml
+expect "0 items"
+$GENCFS -l
+
+# clean up keyring
 $GENCFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
     while read MP ; do $GENCFS -r $MP ; done
 
 expect "no listed items"
 $GENCFS -l
 expect "autostart off"
-test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
+test -e autostart.desktop && echo "autostart on" || echo "autostart off"
 

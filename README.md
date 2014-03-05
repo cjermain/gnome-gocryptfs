@@ -44,14 +44,14 @@ Suppose you have an EncFS folder at `~/.Private.encrypted` which should get
 mounted to `~/Private`. Make it known to *gnome-encfs*:
 
     $ gnome-encfs -a ~/.Private.encrypted ~/Private
-    EncFS config file [-]: <optional custom encfs6.xml location>
+    EncFS config file [-]: <optional custom .encfs6.xml location>
     EncFS password: <enter encfs password>
     Mount at login [Y/n]: <say 'y' or 'n'>
 
 This adds the EncFS path, its mount location and password to the GNOME keyring
 and sets up a GNOME autostart entry to mount it at GNOME login (if enabled).
 
-Note that EncFS config file option only works with EncFS6 config files.
+Check [Anthony's EncFS hints][ehi] for custom `.encfs6.xml` locations.
 
 ### Mount an EncFS folder
 
@@ -127,4 +127,5 @@ License
 [gkr]: http://live.gnome.org/GnomeKeyring
 [gpl]: http://www.gnu.org/licenses/gpl.html
 [itr]: http://bitbucket.org/obensonne/gnome-encfs/issues/?status=new&status=open
+[ehi]: http://www.ict.griffith.edu.au/anthony/info/crypto/encfs.hints
 
