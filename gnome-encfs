@@ -418,7 +418,7 @@ def mount_items(path, autostart):
     for item in items:
         epath = item.attributes["encfs-path"]
         mpoint = item.attributes["mount-point"]
-        econfig = item.attributes["encfs-config"]
+        econfig = item.attributes.get("encfs-config", "-")
         msg = "Mounting %s at %s: " % (epath, mpoint)
         if _is_mounted(mpoint):
             msg += "mount point already in use"
