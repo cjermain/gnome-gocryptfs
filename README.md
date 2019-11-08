@@ -12,17 +12,12 @@ same password for EncFS folders as for your local user account. This is bad
 because local account passwords usually are weaker than those one should use
 for encrypting online stored data, e.g. in a [Dropbox][dbx].
 
-[![Flattr this][flattr-img]][flattr-url]
-
-[flattr-url]: http://flattr.com/thing/142770/gnome-encfs
-[flattr-img]: http://api.flattr.com/button/flattr-badge-large.png "Flattr this"
-
 Download
 --------
 
 Download the [package][dlp] *or* checkout the source:
 
-    $ hg clone http://bitbucket.org/obensonne/gnome-encfs
+    $ hg clone https://hg.sr.ht/~obensonne/gnome-encfs
 
 Installation
 ------------
@@ -121,11 +116,11 @@ License
 *gnome-encfs* is licensed as [GPL][gpl].
 
 [dbx]: http://dropbox.com
-[dlp]: http://bitbucket.org/obensonne/gnome-encfs/get/tip.tar.gz
+[dlp]: https://hg.sr.ht/~obensonne/gnome-encfs/archive/tip.tar.gz
 [efs]: http://www.arg0.net/encfs
 [gdm]: http://library.gnome.org/admin/gdm/stable/configuration.html
 [gkr]: http://live.gnome.org/GnomeKeyring
 [gpl]: http://www.gnu.org/licenses/gpl.html
-[itr]: http://bitbucket.org/obensonne/gnome-encfs/issues/?status=new&status=open
+[itr]: https://todo.sr.ht/~obensonne/gnome-encfs
 [ehi]: http://www.ict.griffith.edu.au/anthony/info/crypto/encfs.hints
 
