@@ -196,7 +196,7 @@ def _encfs_env(econfig):
         cmd = ["file", "-b", "--mime-type", econfig]
         p = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         mime_type = p.communicate()[0].strip()
-        v = 6 if mime_type == 'application/xml' else 5
+        v = 6 if mime_type == 'application/xml' or mime_type == 'text/xml' else 5
         env["ENCFS%s_CONFIG" % v] = econfig
     return env
 
