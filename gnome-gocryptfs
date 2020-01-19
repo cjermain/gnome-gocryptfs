@@ -428,7 +428,7 @@ def mount_items(path, autostart):
             msg += "mount point does not exist or is not a directory"
             rc |= RC_INVALID_PATH
         else:
-            cmd = ["gocryptfs", "-o", "nonempty", "-S", epath, mpoint]
+            cmd = ["gocryptfs", "-o", "nonempty", epath, mpoint]
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                 env=_gocryptfs_env(econfig))
             p.communicate(input="%s\n" % item.secret)
