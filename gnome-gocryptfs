@@ -490,8 +490,8 @@ def edit_item(mpoint):
 
         # check item data
         has_conflicting_mount_point = (
-            attributes["auto-mount"] in mount_point_to_ids and
-            id(item) not in mount_point_to_ids(attributes["auto-mount"])
+            attributes["mount-point"] in mount_point_to_ids and
+            id(item) not in mount_point_to_ids[attributes["mount-point"]]
         )
         if has_conflicting_mount_point:
             _proceed("mount point already in use")
