@@ -1,4 +1,4 @@
-export GNOME_ENCFS_TEST=""
+export GNOME_GOCRYPTFS_TEST=""
 
 expect() {
 	echo "# EXPECT: $1"
@@ -13,7 +13,7 @@ if [ ! -e ./tenv.tar ] ; then
     exit 1
 fi
 
-GENCFS="$PWD/../gnome-encfs"
+GENCFS="$PWD/../gnome-gocryptfs"
 TENV="$PWD/tenv"
 
 # clean up mounts
