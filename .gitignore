@@ -1,5 +1,3 @@
-syntax: glob
-
 # build, temp and backup files
 *.pyc
 *~
