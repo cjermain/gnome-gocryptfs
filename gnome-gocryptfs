@@ -173,6 +173,8 @@ class KeyRing(object):
 
         items.extend(self.find(search_attributes))
 
+        return items
+
 
 # Provide access to the default GNOME keyring
 KEYRING = KeyRing()
@@ -527,7 +529,12 @@ def mount_items(path, autostart):
 
     """
 
-    items = KEYRING.find_keys_for_path(path, {'auto-mount': 'y'} if autostart else None)
+    attributes = {'auto-mount': 'y'} if autostart else {}
+
+    if path is None:
+        items = KEYRING.find(attributes)
+    else:
+        items = KEYRING.find_keys_for_path(path, attributes)
 
     if not items and path:
         print(MSG_NO_MATCH)
