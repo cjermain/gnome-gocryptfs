@@ -10,3 +10,4 @@ tests/tenv
 # IDE files
 .project
 .pydevproject
+*.swp
