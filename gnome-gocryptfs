@@ -147,7 +147,7 @@ class KeyRing(object):
         return self.collection.search_sync(
             self.SCHEMA,
             attributes,
-            Secret.SearchFlags.LOAD_SECRETS
+            Secret.SearchFlags.LOAD_SECRETS | Secret.SearchFlags.ALL
         )
 
     def find_keys_for_path(self, path, attributes=None):
@@ -159,6 +159,9 @@ class KeyRing(object):
         """
         if attributes is None:
             attributes = {}
+
+        # TODO: Remove this test patch
+        attributes["gnome-gocryptfs"] = "TEST" if TEST else ""
 
         search_attributes = attributes.copy()
         search_attributes["gocryptfs-path"] = path
