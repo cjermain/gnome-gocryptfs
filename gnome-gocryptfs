@@ -2,8 +2,9 @@
 
 # =============================================================================
 #
-#    gnome-encfs - GNOME keyring and auto-mount integration of EncFS folders.
-#    Copyright (C) 2010 Oben Sonne <obensonne@googlemail.com>
+#    gnome-gocryptfs - GNOME keyring and auto-mount integration of gocryptfs folders.
+#    Copyright (c) 2020 Colin Jermain <cjermain@gmail.com>
+#                  2010 Oben Sonne <obensonne@googlemail.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by

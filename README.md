@@ -1,31 +1,32 @@
-gnome-encfs
-===========
+gnome-gocryptfs
+===============
 
-*gnome-encfs* integrates [EncFS][efs] folders into the GNOME desktop by storing
+*gnome-gocryptfs* integrates [gocryptfs][cfs] folders into the GNOME desktop by storing
 their passwords in the [keyring][gkr] and optionally mounting them at login
-using GNOME's autostart mechanism.
+using GNOME's autostart mechanism. This package is a fork of the [gnome-encfs][gef]
+project.
 
-*gnome-encfs* allows you to use strong passwords for EncFS folders while still
+*gnome-gocryptfs* allows you to use strong passwords for gocryptfs folders while still
 mounting them painlessly (i.e. no password prompt).  This is an advantage over
-automount solutions like *pam-encfs* and *pam-mount* which require to use the
-same password for EncFS folders as for your local user account. This is bad
+automount solutions like *pam-gocryptfs* and *pam-mount* which require to use the
+same password for gocryptfs folders as for your local user account. This is bad
 because local account passwords usually are weaker than those one should use
 for encrypting online stored data, e.g. in a [Dropbox][dbx].
 
 Download
 --------
 
-Download the [package][dlp] *or* checkout the source:
+Checkout the source:
 
-    $ hg clone https://hg.sr.ht/~obensonne/gnome-encfs
+    $ git clone https://github.com/cjermain/gnome-gocryptfs
 
 Installation
 ------------
 
-    $ cd /path/to/gnome-encfs
-    $ install gnome-encfs /usr/local/bin
+    $ cd /path/to/gnome-gocryptfs
+    $ install gnome-gocryptfs /usr/local/bin
 
-**Note:** You can run *gnome-encfs* right from the extracted package but to
+**Note:** You can run *gnome-gocryptfs* right from the extracted package but to
 make use of the automount feature at GNOME login, it must be placed somewhere
 in *PATH* (as configured during a login to GNOME). Using the install command
 above ensures this requirement is fulfilled.
@@ -36,9 +37,9 @@ Usage
 ### Add an EncFS folder
 
 Suppose you have an EncFS folder at `~/.Private.encrypted` which should get
-mounted to `~/Private`. Make it known to *gnome-encfs*:
+mounted to `~/Private`. Make it known to *gnome-gocryptfs*:
 
-    $ gnome-encfs -a ~/.Private.encrypted ~/Private
+    $ gnome-gocryptfs -a ~/.Private.encrypted ~/Private
     EncFS config file [-]: <optional custom .encfs6.xml location>
     EncFS password: <enter encfs password>
     Mount at login [Y/n]: <say 'y' or 'n'>
@@ -46,15 +47,13 @@ mounted to `~/Private`. Make it known to *gnome-encfs*:
 This adds the EncFS path, its mount location and password to the GNOME keyring
 and sets up a GNOME autostart entry to mount it at GNOME login (if enabled).
 
-Check [Anthony's EncFS hints][ehi] for custom `.encfs6.xml` locations.
-
 ### Mount an EncFS folder
 
 If you said *y* above to the login mount question, the EncFS folder gets
 mounted automatically at GNOME login. If you prefer to mount on demand, you do
 that with
 
-     $ gnome-encfs -m ~/Private
+     $ gnome-gocryptfs -m ~/Private
 
 which looks up the password in the keyring and does the mounting without
 the need to enter the password manually.
@@ -67,13 +66,13 @@ Unmount as usual, using *fusermount*:
 
 You can also  show, edit and remove EncFS folders handled by *gnome-enfs*:
 
-    $ gnome-encfs -h
+    $ gnome-gocryptfs -h
 
-    Usage: gnome-encfs --list
-           gnome-encfs --mount [ENCFS-PATH-or-MOUNT-POINT]
-           gnome-encfs --add ENCFS-PATH MOUNT-POINT
-           gnome-encfs --edit MOUNT-POINT
-           gnome-encfs --remove MOUNT-POINT
+    Usage: gnome-gocryptfs --list
+           gnome-gocryptfs --mount [ENCFS-PATH-or-MOUNT-POINT]
+           gnome-gocryptfs --add ENCFS-PATH MOUNT-POINT
+           gnome-gocryptfs --edit MOUNT-POINT
+           gnome-gocryptfs --remove MOUNT-POINT
 
     Painlessly mount and manage EncFS folders using GNOME's keyring.
 
@@ -107,20 +106,19 @@ unmounts each, using the `fusermount` command (note that this command is
 executed as *root*, that's why there is a `sudo -u $USER` before the
 `fusermount` command).
 
-This works independent of *gnome-encfs*, i.e. it unmounts **any** EncFS folder
+This works independent of *gnome-gocryptfs*, i.e. it unmounts **any** EncFS folder
 of the user logging out.
 
 License
 -------
 
-*gnome-encfs* is licensed as [GPL][gpl].
+*gnome-gocryptfs* is licensed as [GPL][gpl].
 
+[gef]: https://hg.sr.ht/~obensonne/gnome-encfs
 [dbx]: http://dropbox.com
-[dlp]: https://hg.sr.ht/~obensonne/gnome-encfs/archive/tip.tar.gz
-[efs]: http://www.arg0.net/encfs
+[cfs]: https://nuetzlich.net/gocryptfs/
 [gdm]: http://library.gnome.org/admin/gdm/stable/configuration.html
 [gkr]: http://live.gnome.org/GnomeKeyring
 [gpl]: http://www.gnu.org/licenses/gpl.html
-[itr]: https://todo.sr.ht/~obensonne/gnome-encfs
-[ehi]: http://www.ict.griffith.edu.au/anthony/info/crypto/encfs.hints
+[itr]: https://github.com/cjermain/gnome-gocryptfs/issues
 
