@@ -144,11 +144,13 @@ class KeyRing(object):
 
         # TODO: Remove this test patch
         attributes["gnome-gocryptfs"] = "TEST" if TEST else ""
-        return self.collection.search_sync(
+        items = self.collection.search_sync(
             self.SCHEMA,
             attributes,
             Secret.SearchFlags.LOAD_SECRETS | Secret.SearchFlags.ALL
         )
+
+        return sorted(items, key=lambda x: x.get_attributes()["mount-point"])
 
     def find_keys_for_path(self, path, attributes=None):
         """Returns a list of items in the keyring that match either the
@@ -173,7 +175,7 @@ class KeyRing(object):
 
         items.extend(self.find(search_attributes))
 
-        return items
+        return sorted(items, key=lambda x: x.get_attributes()["mount-point"])
 
 
 # Provide access to the default GNOME keyring
