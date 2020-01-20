@@ -11,3 +11,6 @@ tests/tenv
 .project
 .pydevproject
 *.swp
+
+# scratch files
+scratch/*
