@@ -317,7 +317,7 @@ def _config_commands(config):
     :param config: String path to config file or '-'
     """
     if config != '-' and os.path.exists(config):
-        return ["-config", config]
+        return ["-config", _pathify(config)]
     else:
         return []
 
@@ -335,7 +335,7 @@ def _is_gocryptfs(epath, econfig):
     """Check if 'epath' points to an gocryptfs directory."""
 
     command = ["gocryptfs", "-info", epath]
-    command.extend(_config_commands(econfig))
+    command[1:1] = _config_commands(econfig)
 
     p = subprocess.Popen(
         command,
@@ -570,7 +570,7 @@ def mount_items(path, autostart):
                 attributes["gocryptfs-path"],
                 attributes["mount-point"]
             ]
-            command.extend(_config_commands(attributes["gocryptfs-config"]))
+            command[1:1] = _config_commands(attributes["gocryptfs-config"])
 
             p = subprocess.Popen(command, stdin=subprocess.PIPE)
             p.communicate(input="%s\n" % item.get_secret().get().decode())
