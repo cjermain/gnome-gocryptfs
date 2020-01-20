@@ -138,11 +138,11 @@ test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 $GGOCRYPTFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
     while read MP ; do $GGOCRYPTFS -r $MP ; done
 
-# test custom EncFS config file location (v5)
+# test custom gocryptfs config file location
 
-expect "succeeding add (1) with custom v5 config file location"
-mv $TENV/e1/.encfs5 $TENV/e1_encfs5
-$GGOCRYPTFS -a $TENV/e1 $TENV/m1 --econfig $TENV/e1_encfs5 --password p1 --proceed n --amount n
+expect "succeeding add (1) with custom config file location"
+mv $TENV/e1/gocryptfs.conf $TENV/e1_gocryptfs.conf
+$GGOCRYPTFS -a $TENV/e1 $TENV/m1 --econfig $TENV/e1_gocryptfs.conf --password p1 --proceed n --amount n
 expect "1 listed item (1)"
 $GGOCRYPTFS -l
 
@@ -158,57 +158,20 @@ expect "no mounted paths - all unmounted"
 mounts
 
 expect "succeeding edit (1) reset config file location"
-mv $TENV/e1_encfs5 $TENV/e1/.encfs5
+mv $TENV/e1_gocryptfs.conf $TENV/e1/gocryptfs.conf
 $GGOCRYPTFS -e $TENV/m1 --econfig "-" --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
 expect "1 listed item (1)"
 $GGOCRYPTFS -l
 
-expect "succeeding edit (1) with custom v5 config file location"
-mv $TENV/e1/.encfs5 $TENV/e1_encfs5
-$GGOCRYPTFS -e $TENV/m1 --econfig $TENV/e1_encfs5 --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
+expect "succeeding edit (1) with custom config file location"
+mv $TENV/e1/gocryptfs.conf $TENV/e1_gocryptfs.conf
+$GGOCRYPTFS -e $TENV/m1 --econfig $TENV/e1_gocryptfs.conf --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
 expect "1 listed item (1)"
 $GGOCRYPTFS -l
 
 expect "succeeding remove (1)"
 $GGOCRYPTFS -r $TENV/m1
-mv $TENV/e1_encfs5 $TENV/e1/.encfs5
-expect "0 items"
-$GGOCRYPTFS -l
-
-# test custom EncFS config file location (v6)
-
-expect "succeeding add (1) with custom v6 config file location"
-mv $TENV/e2/.encfs6.xml $TENV/e2_encfs6.xml
-$GGOCRYPTFS -a $TENV/e2 $TENV/m2 --econfig $TENV/e2_encfs6.xml --password p2 --proceed n --amount n
-expect "1 listed item (2)"
-$GGOCRYPTFS -l
-
-expect "1 succeeding mounts (2)"
-$GGOCRYPTFS -m $TENV/e2
-expect "1 mounted paths (2)"
-mounts
-
-for MPOINT in $TENV/m2* ; do
-        fusermount -u $MPOINT 2>&1
-done
-expect "no mounted paths - all unmounted"
-mounts
-
-expect "succeeding edit (2) reset config file location"
-mv $TENV/e2_encfs6.xml $TENV/e2/.encfs6.xml
-$GGOCRYPTFS -e $TENV/m2 --econfig "-" --password p2 --epath $TENV/e2 --mpoint $TENV/m2 --proceed n --amount n
-expect "1 listed item (2)"
-$GGOCRYPTFS -l
-
-expect "succeeding edit (2) with custom v6 config file locations"
-mv $TENV/e2/.encfs6.xml $TENV/e2_encfs6.xml
-$GGOCRYPTFS -e $TENV/m2 --econfig $TENV/e2_encfs6.xml --password p2 --epath $TENV/e2 --mpoint $TENV/m2 --proceed n --amount n
-expect "1 listed item (2)"
-$GGOCRYPTFS -l
-
-expect "succeeding remove (2)"
-$GGOCRYPTFS -r $TENV/m2
-mv $TENV/e2_encfs6.xml $TENV/e2/.encfs6.xml
+mv $TENV/e1_gocryptfs.conf $TENV/e1/gocryptfs.conf
 expect "0 items"
 $GGOCRYPTFS -l
 
