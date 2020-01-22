@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # =============================================================================
 #
@@ -326,7 +326,7 @@ def _is_mounted(mpoint):
 
     p = subprocess.Popen(["mount"], stdout=subprocess.PIPE)
     mount = p.communicate()[0]
-    lines = mount.strip('\n').split('\n')
+    lines = mount.decode().strip('\n').split('\n')
     points = map(lambda line: line.split()[2], lines)
     points = [os.path.abspath(p) for p in points]
     return os.path.abspath(mpoint) in points
@@ -573,7 +573,7 @@ def mount_items(path, autostart):
             command[1:1] = _config_commands(attributes["gocryptfs-config"])
 
             p = subprocess.Popen(command, stdin=subprocess.PIPE)
-            p.communicate(input="%s\n" % item.get_secret().get().decode())
+            p.communicate(input=b"%s\n" % item.get_secret().get())
             msg += p.returncode and "FAILED" or "OK"
             rc |= 0 if p.returncode == os.EX_OK else RC_MOUNT_FAILED
 
