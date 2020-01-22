@@ -181,15 +181,15 @@ autostart on
 # EXPECT: autostart on
 autostart on
 # EXPECT: autostart content
-[Desktop Entry]
-Comment=Mount gocryptfs folders configured in GNOME's keyring
-Name=Mount gocryptfs
-Exec=gnome-gocryptfs autostart
-Version=1.0
-Type=Application
-X-GNOME-Autostart-enabled=true
-Icon=folder
 
+Comment=Mount gocryptfs folders configured in GNOME's keyring
+[Desktop Entry]
+Exec=gnome-gocryptfs autostart
+Icon=folder
+Name=Mount gocryptfs
+Type=Application
+Version=1.0
+X-GNOME-Autostart-enabled=true
 # EXPECT: 1 succeeding edits
 # EXPECT: autostart off
 autostart off
