@@ -21,6 +21,6 @@ jobs:
             - name: Run Tests
               run: |
                   export $(dbus-launch)
-                  bash ./set_default_collection.py
+                  gnome-keyring-daemon -r -d
                   bash ./run.sh
               working-directory: ./tests/
