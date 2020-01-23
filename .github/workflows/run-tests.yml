@@ -21,6 +21,6 @@ jobs:
             - name: Run Tests
               run: |
                   export $(dbus-launch)
-                  python ./set_default_collection.py
+                  bash ./set_default_collection.py
                   bash ./run.sh
               working-directory: ./tests/
