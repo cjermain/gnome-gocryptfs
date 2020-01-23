@@ -18,8 +18,8 @@ jobs:
             - uses: actions/checkout@v2
             - name: Install dependencies
               run: sudo apt install -y python3-xdg python3-gi dbus-x11
-            - name: Run dbus
-              run: export $(dbus-launch)
             - name: Run Tests
-              run: bash ./run.sh
+              run: |
+                  export $(dbus-launch)
+                  bash ./run.sh
               working-directory: ./tests/
