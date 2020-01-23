@@ -11,4 +11,5 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Run Tests
-              run: bash ./tests/run.sh
+              run: bash ./run.sh
+              working-directory: ./tests/
