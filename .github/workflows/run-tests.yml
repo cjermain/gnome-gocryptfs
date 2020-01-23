@@ -16,6 +16,8 @@ jobs:
                 os: [ubuntu-16.04, ubuntu-18.04]
         steps:
             - uses: actions/checkout@v2
+            - name: Install dependencies
+              run: sudo apt install -y python3-xdg python3-gi
             - name: Run Tests
               run: bash ./run.sh
               working-directory: ./tests/
