@@ -17,7 +17,7 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Install dependencies
-              run: sudo apt install -y python3-xdg python3-gi
+              run: sudo apt install -y python3-xdg python3-gi dbus-x11
             - name: Run dbus
               run: dbus-launch
             - name: Run Tests
