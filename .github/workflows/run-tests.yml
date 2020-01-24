@@ -6,8 +6,6 @@ on:
     pull_request:
         branches:
             - master
-env:
-    GOCRYPTFS_VERSION: 'v1.7.1'
 
 jobs:
     build:
@@ -19,12 +17,14 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - name: Install gocryptfs
+              env:
+                  GOCRYPTFS_VERSION: 'v1.7.1'
               run: |
                   wget https://nuetzlich.net/gocryptfs-signing-key.pub
                   gpg --import gocryptfs-signing-key.pub
                   wget "https://github.com/rfjakob/gocryptfs/releases/download/${GOCRYPTFS_VERSION}/gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz"
                   wget "https://github.com/rfjakob/gocryptfs/releases/download/${GOCRYPTFS_VERSION}/gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
-                  gpg --verify "gocryptfs_$GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
+                  gpg --verify "gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
                   tar xzf "gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz"
                   install gocryptfs /usr/local/bin
             - name: Install dependencies
