@@ -1,6 +1,8 @@
 gnome-gocryptfs
 ===============
 
+![](https://github.com/cjermain/gnome-gocryptfs/workflows/Run%20Tests/badge.svg)
+
 *gnome-gocryptfs* integrates [gocryptfs][cfs] folders into the GNOME desktop by storing
 their passwords in the [keyring][gkr] and optionally mounting them at login
 using GNOME's autostart mechanism. This package is a fork of the [gnome-encfs][gef]
