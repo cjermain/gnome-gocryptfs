@@ -127,7 +127,7 @@ $GGOCRYPTFS -e $TENV/m2 --econfig "-" --password p2 --epath $TENV/e2 --mpoint $T
 expect "autostart on"
 test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 expect "autostart content"
-cat autostart.desktop | sort # Ensure that the order does not matter
+cat autostart.desktop | sort -d # Ensure that the order does not matter
 expect "1 succeeding edits"
 $GGOCRYPTFS -e $TENV/m3b --econfig "-" --password p3 --epath $TENV/e3 --mpoint $TENV/m3b --proceed n --amount n
 expect "autostart off"
