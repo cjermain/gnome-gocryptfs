@@ -26,7 +26,8 @@ jobs:
                   wget "https://github.com/rfjakob/gocryptfs/releases/download/${GOCRYPTFS_VERSION}/gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
                   gpg --verify "gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
                   tar xzf "gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz"
-                  install gocryptfs /usr/local/bin
+                  sudo install gocryptfs /usr/local/bin
+                  which gocryptfs
             - name: Install dependencies
               run: sudo apt install -y python3-xdg python3-gi dbus-x11 gnome-keyring libsecret-1-0
             - name: Run Tests
