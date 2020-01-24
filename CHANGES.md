@@ -1,6 +1,6 @@
 # Changes
 
-## gnome-gocryptfs v0.2 (2019-01-23)
+## gnome-gocryptfs v0.2 (2020-01-23)
 
 * Initial fork of [gnome-encfs][gef] v0.1 (ported from Mercurial VCS)
 * Ported to support `gocryptfs` instead of `encfs`
