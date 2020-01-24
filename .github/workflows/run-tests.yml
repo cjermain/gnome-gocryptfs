@@ -6,6 +6,8 @@ on:
     pull_request:
         branches:
             - master
+env:
+    GOCRYPTFS_VERSION: 'v1.7.1'
 
 jobs:
     build:
@@ -14,17 +16,16 @@ jobs:
         strategy:
             matrix:
                 os: [ubuntu-16.04, ubuntu-18.04]
-                gocryptfs_version: v1.7.1
         steps:
             - uses: actions/checkout@v2
             - name: Install gocryptfs
               run: |
                   wget https://nuetzlich.net/gocryptfs-signing-key.pub
                   gpg --import gocryptfs-signing-key.pub
-                  wget https://github.com/rfjakob/gocryptfs/releases/download/${{ matrix.gocryptfs_version }}/gocryptfs_${{ matrix.gocryptfs_version }}_linux-static_amd64.tar.gz
-                  wget https://github.com/rfjakob/gocryptfs/releases/download/${{ matrix.gocryptfs_version }}/gocryptfs_${{ matrix.gocryptfs_version }}_linux-static_amd64.tar.gz.asc
-                  gpg --verify gocryptfs_${{ matrix.gocryptfs_version }}_linux-static_amd64.tar.gz.asc
-                  tar xzf gocryptfs_${{ matrix.gocryptfs_version }}_linux-static_amd64.tar.gz
+                  wget "https://github.com/rfjakob/gocryptfs/releases/download/${GOCRYPTFS_VERSION}/gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz"
+                  wget "https://github.com/rfjakob/gocryptfs/releases/download/${GOCRYPTFS_VERSION}/gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
+                  gpg --verify "gocryptfs_$GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz.asc"
+                  tar xzf "gocryptfs_${GOCRYPTFS_VERSION}_linux-static_amd64.tar.gz"
                   install gocryptfs /usr/local/bin
             - name: Install dependencies
               run: sudo apt install -y python3-xdg python3-gi dbus-x11 gnome-keyring libsecret-1-0
