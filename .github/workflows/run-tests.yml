@@ -38,3 +38,8 @@ jobs:
                   echo 'fake-password' | gnome-keyring-daemon -r -d --unlock
                   bash ./run.sh
               working-directory: ./tests/
+            - uses: actions/upload-artifact@v1
+              if: failure()
+              with:
+                  name: test.err
+                  path: ./tests/test.err
