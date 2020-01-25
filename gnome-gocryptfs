@@ -24,7 +24,7 @@
 import getpass
 import os
 import os.path
-import optparse
+import argparse
 import subprocess
 import sys
 from collections import defaultdict
@@ -36,23 +36,10 @@ import gi
 gi.require_version('Secret', '1')
 from gi.repository import Secret
 
-# =============================================================================
-# test mode related
-# =============================================================================
+__version__ = "0.3"
 
 TEST = "GNOME_GOCRYPTFS_TEST" in os.environ
 
-class preset:
-    """Preset user input. Used for non-interactive testing mode."""
-
-    proceed = None
-    password = None
-    epath = None
-    econfig = None
-    mpoint = None
-    amount = None
-
-# =============================================================================
 
 class KeyRing(object):
     """The KeyRing object wraps the gi.repository.Secret library provided by
@@ -182,17 +169,11 @@ class KeyRing(object):
 KEYRING = KeyRing()
 
 MSG_NO_MATCH = ("No matching gocryptfs items in keyring.\n"
-                "Use option --list to show available items or "
-                "option --add to add items.")
+                "Use the list command to show available items or "
+                "the add command to add items.")
 
-MSG_NO_GOCRYPTFS_PATH = ("no gocryptfs at given path (or the gocryptfs config file "
+MSG_NO_GOCRYPTFS_PATH = ("No gocryptfs at given path (or the gocryptfs config file "
                      "location is invalid)")
-
-USAGE = """Usage: %prog --list
-       %prog --mount [GOCRYPTFS-PATH-or-MOUNT-POINT]
-       %prog --add GOCRYPTFS-PATH MOUNT-POINT
-       %prog --edit MOUNT-POINT
-       %prog --remove MOUNT-POINT"""
 
 DESCRIPTION = """Painlessly mount and manage gocryptfs folders using GNOME's
 keyring."""
@@ -203,8 +184,6 @@ optionally mounts gocryptfs paths automatically on login to a GNOME session (wor
 only if gnome-gocryptfs is installed in the system path, at /usr/bin or
 /usr/local/bin).
 """
-
-VERSION="0.1"
 
 # bitwise or'able return codes
 RC_OK = 0
@@ -218,76 +197,56 @@ RC_MOUNT_POINT_IN_USE = 16
 # helper
 # =============================================================================
 
-def _options():
-    """Parse command line options."""
+def _parse_args():
+    """Parse command line arguments."""
 
-    op = optparse.OptionParser(usage=USAGE, version=VERSION,
-                               description=DESCRIPTION, epilog=EPILOG)
+    parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EPILOG)
+    parser.add_argument('--version', action='version', version=__version__)
+    parser.set_defaults(func=None)
 
-    op.add_option("-l", "--list", action="store_true", default=False,
-                  help="list all gocryptfs items stored in keyring")
-    op.add_option("-m", "--mount", action="store_true", default=False,
-                  help="mount all or selected gocryptfs paths stored in keyring")
-    op.add_option("-a", "--add", action="store_true", default=False,
-                  help="add a new gocryptfs item to keyring")
-    op.add_option("-e", "--edit", action="store_true", default=False,
-                  help="edit an gocryptfs item in keyring")
-    op.add_option("-r", "--remove", action="store_true", default=False,
-                  help="remove an gocryptfs item from keyring")
+    subparsers = parser.add_subparsers()
 
-    og = optparse.OptionGroup(op, "Non-interactive")
-    og.add_option("", "--proceed", default=None,
-                  help="Input for proceed question")
-    og.add_option("", "--password", default=None, metavar="PW",
-                  help="Input for password prompt")
-    og.add_option("", "--epath", default=None,
-                  help="Input for gocryptfs path edit")
-    og.add_option("", "--mpoint", default=None,
-                  help="Input for mount point edit")
-    og.add_option("", "--amount", default=None,
-                  help="Input for auto mount question")
-    og.add_option("", "--econfig", default=None,
-                  help="Input for gocryptfs config file question")
+    parser_list = subparsers.add_parser("list", help="List all gocryptfs items stored in the keyring")
+    parser_list.add_argument('--path', help="Path to gocryptfs or mount folder", type=str, default=None)
+    parser_list.set_defaults(func=list_items)
 
-    op.add_option_group(og)
+    parser_mount = subparsers.add_parser("mount", help="Mount all or selected paths stored in the keyring")
+    parser_mount.add_argument('path', help="Path to gocryptfs or mount folder", nargs='?', type=str, default=None)
+    parser_mount.add_argument("--auto", help="Mount all auto-mount paths stored in the keyring", action='store_true', default=False)
+    parser_mount.set_defaults(func=mount_items)
 
-    opts, args = op.parse_args()
+    parser_add = subparsers.add_parser("add", help="Add a new gocryptfs path to the keyring")
+    parser_add.add_argument("gocryptfs_path", help="Path to encrypted gocryptfs folder")
+    parser_add.add_argument("mount_path", help="Path to unencrypted folder")
+    parser_add.add_argument("--config", help="Path to external configuration", type=str, default=None)
+    parser_add.add_argument("--password", help="Password for gocryptfs folder", type=str, default=None)
+    parser_add.add_argument("--proceed", help="Proceed without being prompted", type=str, default=None)
+    parser_add.add_argument("--auto-mount", help="Automatically mount", type=str, default=None)
+    parser_add.set_defaults(func=add_item)
 
-    try:
-        args.remove("autostart")
-        opts.autostart = True
-        opts.mount = True
-    except ValueError:
-        opts.autostart = False
+    parser_edit = subparsers.add_parser("edit", help="Edit a gocryptfs item in the keyring")
+    parser_edit.add_argument("mount_path", help="Path to unencrypted mount folder")
+    parser_edit.add_argument("--path", help="New path to encrypted gocryptfs folder", type=str, default=None)
+    parser_edit.add_argument("--mount", help="New path to unencrypted mount folder", type=str, default=None)
+    parser_edit.add_argument("--config", help="Path to external configuration", type=str, default=None)
+    parser_edit.add_argument("--password", help="Password for gocryptfs folder", type=str, default=None)
+    parser_edit.add_argument("--proceed", help="Proceed without being prompted", type=str, default=None)
+    parser_edit.add_argument("--auto-mount", help="Automatically mount", type=str, default=None)
+    parser_edit.set_defaults(func=edit_item)
 
-    if opts.list + opts.mount + opts.add + opts.edit + opts.remove != 1:
-        op.print_help()
-        op.exit(1)
+    parser_remove = subparsers.add_parser("remove", help="Remove a gocryptfs item from the keyring")
+    parser_remove.add_argument("path", help="Path to unencrypted mount folder")
+    parser_remove.set_defaults(func=remove_item)
+
+    args = parser.parse_args()
+    if args.func is None:
+        parser.print_help()
+        exit(RC_OK)
 
     # normalize paths
-    args = [_pathify(a) for a in args]
+    #args = [_pathify(a) for a in args]
 
-    opts.p1 = args and args.pop(0) or None
-    opts.p2 = args and args.pop(0) or None
-
-    if opts.add and not (opts.p1 and opts.p2):
-        op.error("add needs an gocryptfs path and a moint point")
-        op.print_help()
-        op.exit(1)
-
-    if opts.remove and not opts.p1:
-        op.error("remove needs a moint point")
-        op.print_help()
-        op.exit(1)
-
-    preset.proceed = opts.proceed
-    preset.password = opts.password
-    preset.epath = opts.epath
-    preset.mpoint = opts.mpoint
-    preset.amount = opts.amount
-    preset.econfig = opts.econfig
-
-    return opts
+    return parser.parse_args()
 
 def _exit(rc):
     """Exit with additional check if autostart file is still needed."""
@@ -296,9 +255,9 @@ def _exit(rc):
         _autostart(KEYRING.find({'auto-mount': 'y'}))
     sys.exit(rc)
 
-def _proceed(msg):
+def _proceed(msg, proceed=None):
     print("Warning: %s" % msg)
-    proceed = preset.proceed or raw_input("Proceed [y/N]: ") or "n"
+    proceed = proceed or raw_input("Proceed [y/N]: ") or "n"
     if proceed.strip()[0].lower() != "y":
         _exit(2)
 
@@ -378,11 +337,10 @@ def _autostart(enable):
 # =============================================================================
 
 
-def list_items(path=None):
+def list_items(args):
     """List gocryptfs items in keyring.
-
-    :param path: String path of the mount point
     """
+    path = args.path
 
     if path is not None:
         items = KEYRING.find_keys_for_path(path)
@@ -402,30 +360,29 @@ def list_items(path=None):
         message += "  mount at login   : {auto-mount}\n"
         message += "  gocryptfs config : {gocryptfs-config}"
 
-        #print(message.format_map(attributes))
-        print(message.format(**attributes))
+        print(message.format_map(attributes))
 
     return RC_OK
 
-def add_item(epath, mpoint):
+def add_item(args):
     """Add new gocryptfs item to keyring.
-
-    :param epath: Encrypted directory path
-    :param mpath: Mount point path
     """
 
-    if not os.path.isdir(mpoint):
-        _proceed("mount point is not a directory")
-    if KEYRING.find({'mount-point': mpoint}):
-        _proceed("mount point already in keyring")
+    epath = args.gocryptfs_path
+    mpoint = args.mount_path
 
-    econfig = preset.econfig or raw_input("gocryptfs config file [-]: ") or "-"
+    if not os.path.isdir(mpoint):
+        _proceed("mount point is not a directory", args.proceed)
+    if KEYRING.find({'mount-point': mpoint}):
+        _proceed("mount point already in keyring", args.proceed)
+
+    econfig = args.config or raw_input("gocryptfs config file [-]: ") or "-"
 
     if not _is_gocryptfs(epath, econfig):
-        _proceed(MSG_NO_GOCRYPTFS_PATH)
+        _proceed(MSG_NO_GOCRYPTFS_PATH, args.proceed)
 
-    secret = preset.password or getpass.getpass("gocryptfs password: ")
-    amount = preset.amount or raw_input("Mount at login [Y/n]: ") or "y"
+    secret = args.password or getpass.getpass("gocryptfs password: ")
+    amount = args.auto_mount or raw_input("Mount at login [Y/n]: ") or "y"
     amount = amount.strip()[0].lower() == "y" and "y" or "n"
 
     attributes = KEYRING.default_attributes()
@@ -441,11 +398,13 @@ def add_item(epath, mpoint):
 
     return RC_OK
 
-def edit_item(mpoint):
+def edit_item(args):
     """Edit gocryptfs item in keyring.
 
     :param mpoint: Mount point path
     """
+    mpoint = args.mount_path
+
     # Find all matching endpoints
     edits = KEYRING.find({'mount-point': mpoint})
 
@@ -465,27 +424,27 @@ def edit_item(mpoint):
         # get item data
         attributes = item.get_attributes()
         attributes["gocryptfs-path"] = _pathify(
-            preset.epath or
+            args.path or
             raw_input("gocryptfs path [%s]: " % attributes["gocryptfs-path"]) or
             attributes["gocryptfs-path"]
         )
         attributes["gocryptfs-config"] = (
-            preset.econfig or
+            args.config or
             raw_input("gocryptfs config file [%s] (`-`: default): " % attributes["gocryptfs-config"]) or
             attributes["gocryptfs-config"]
         )
         attributes["mount-point"] = _pathify(
-            preset.mpoint or
+            args.mount or
             raw_input("Mount point [%s]: " % attributes["mount-point"]) or
             attributes["mount-point"]
         )
         secret = (
-            preset.password or
+            args.password or
             getpass.getpass("Password [**current**]: ") or
             None
         )
         attributes["auto-mount"] = (
-            preset.amount or
+            args.auto_mount or
             raw_input("Mount at login [%s]: " % "Y/n" if attributes["auto-mount"] == "y" else "y/N") or
             attributes["auto-mount"]
         )
@@ -500,19 +459,21 @@ def edit_item(mpoint):
             id(item) not in mount_point_to_ids[attributes["mount-point"]]
         )
         if has_conflicting_mount_point:
-            _proceed("mount point already in use")
+            _proceed("mount point already in use", args.proceed)
         if not _is_gocryptfs(attributes["gocryptfs-path"], attributes["gocryptfs-config"]):
-            _proceed(MSG_NO_GOCRYPTFS_PATH)
+            _proceed(MSG_NO_GOCRYPTFS_PATH, args.proceed)
         if not os.path.isdir(mpoint):
-            _proceed("mount point is not a directory")
+            _proceed("mount point is not a directory", args.proceed)
 
         # update item data
         KEYRING.edit(item, attributes=attributes, secret=secret)
 
     return RC_OK
 
-def remove_item(mpoint):
+def remove_item(args):
     """Remove gocryptfs item from keyring."""
+
+    mpoint = args.path
 
     items = KEYRING.find({'mount-point': mpoint})
 
@@ -525,7 +486,7 @@ def remove_item(mpoint):
 
     return RC_OK
 
-def mount_items(path, autostart):
+def mount_items(args):
     """Mount selected items.
 
     If `path` is set, mount only those items where the gocryptfs path or mount
@@ -536,6 +497,8 @@ def mount_items(path, autostart):
     otherwise.
 
     """
+    path = args.path
+    autostart = args.auto
 
     attributes = {'auto-mount': 'y'} if autostart else {}
 
@@ -553,14 +516,13 @@ def mount_items(path, autostart):
     for item in items:
         attributes = item.get_attributes()
 
-        #msg = "Mounting {gocryptfs-path} at {mount-point}: ".format_map(attributes)
-        msg = "Mounting {gocryptfs-path} at {mount-point}: ".format(**attributes)
+        msg = "Mounting {gocryptfs-path} at {mount-point}: ".format_map(attributes)
 
         if _is_mounted(attributes["mount-point"]):
-            msg += "mount point already in use"
+            msg += "Mount point already in use"
             rc |= RC_MOUNT_POINT_IN_USE
         elif not os.path.isdir(attributes["mount-point"]):
-            msg += "mount point does not exist or is not a directory"
+            msg += "Mount point does not exist or is not a directory"
             rc |= RC_INVALID_PATH
         else:
             command = [
@@ -586,22 +548,8 @@ def mount_items(path, autostart):
 # =============================================================================
 
 def main():
-
-    opts = _options()
-
-    if opts.add:
-        rc = add_item(opts.p1, opts.p2)
-    elif opts.list:
-        rc = list_items(opts.p1)
-    elif opts.mount:
-        rc = mount_items(opts.p1, opts.autostart)
-    elif opts.edit:
-        rc = edit_item(opts.p1)
-    elif opts.remove:
-        rc = remove_item(opts.p1)
-    else:
-        assert False
-
+    args = _parse_args()
+    rc = args.func(args)
     return rc
 
 if __name__ == '__main__':

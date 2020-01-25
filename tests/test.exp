@@ -90,10 +90,10 @@ Mounting ./tenv/m3b: OK
 ./tenv/m3a type fuse.gocryptfs
 ./tenv/m3b type fuse.gocryptfs
 # EXPECT: 4 failing mounts - already mounted
-Mounting ./tenv/m1: mount point already in use
-Mounting ./tenv/m2: mount point already in use
-Mounting ./tenv/m3a: mount point already in use
-Mounting ./tenv/m3b: mount point already in use
+Mounting ./tenv/m1: Mount point already in use
+Mounting ./tenv/m2: Mount point already in use
+Mounting ./tenv/m3a: Mount point already in use
+Mounting ./tenv/m3b: Mount point already in use
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 3 items (1,2,3b)
 * gocryptfs path   : ./tenv/e1
