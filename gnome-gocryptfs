@@ -41,8 +41,12 @@ __version__ = "0.3"
 TEST = "GNOME_GOCRYPTFS_TEST" in os.environ
 
 
-class KeyRing(object):
-    """The KeyRing object wraps the gi.repository.Secret library provided by
+class LockedKeyring(Exception):
+    pass
+
+
+class Keyring(object):
+    """The Keyring object wraps the gi.repository.Secret library provided by
     libsecret for GNOME. It uses a specific schema for the purpose of storing
     keys for gnome-gocrpytfs, and provides convenience methods for adding,
     editing, finding, and removing these keys in the keyring.
@@ -63,7 +67,7 @@ class KeyRing(object):
     )
 
     def __init__(self):
-        """Constructs a KeyRing object which handles setting, editing, and removing
+        """Constructs a Keyring object which handles setting, editing, and removing
         an item from the keyring. This holds a Service and Collection object with
         libsecret.
         """
@@ -73,6 +77,8 @@ class KeyRing(object):
             self.COLLECTION,
             Secret.CollectionFlags.LOAD_ITEMS,
         )
+        if self.collection.get_locked():
+            raise LockedKeyring("The {} keyring is locked".format(self.collection.get_label()))
 
     def default_attributes(self):
         """Returns a dictionary with default attributes that conforms to the
@@ -166,7 +172,7 @@ class KeyRing(object):
 
 
 # Provide access to the default GNOME keyring
-KEYRING = KeyRing()
+KEYRING = Keyring()
 
 MSG_NO_MATCH = ("No matching gocryptfs items in keyring.\n"
                 "Use the list command to show available items or "
@@ -197,56 +203,6 @@ RC_MOUNT_POINT_IN_USE = 16
 # helper
 # =============================================================================
 
-def _parse_args():
-    """Parse command line arguments."""
-
-    parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EPILOG)
-    parser.add_argument('--version', action='version', version=__version__)
-    parser.set_defaults(func=None)
-
-    subparsers = parser.add_subparsers()
-
-    parser_list = subparsers.add_parser("list", help="List all gocryptfs items stored in the keyring")
-    parser_list.add_argument('--path', help="Path to gocryptfs or mount folder", type=str, default=None)
-    parser_list.set_defaults(func=list_items)
-
-    parser_mount = subparsers.add_parser("mount", help="Mount all or selected paths stored in the keyring")
-    parser_mount.add_argument('path', help="Path to gocryptfs or mount folder", nargs='?', type=str, default=None)
-    parser_mount.add_argument("--auto", help="Mount all auto-mount paths stored in the keyring", action='store_true', default=False)
-    parser_mount.set_defaults(func=mount_items)
-
-    parser_add = subparsers.add_parser("add", help="Add a new gocryptfs path to the keyring")
-    parser_add.add_argument("gocryptfs_path", help="Path to encrypted gocryptfs folder")
-    parser_add.add_argument("mount_path", help="Path to unencrypted folder")
-    parser_add.add_argument("--config", help="Path to external configuration", type=str, default=None)
-    parser_add.add_argument("--password", help="Password for gocryptfs folder", type=str, default=None)
-    parser_add.add_argument("--proceed", help="Proceed without being prompted", type=str, default=None)
-    parser_add.add_argument("--auto-mount", help="Automatically mount", type=str, default=None)
-    parser_add.set_defaults(func=add_item)
-
-    parser_edit = subparsers.add_parser("edit", help="Edit a gocryptfs item in the keyring")
-    parser_edit.add_argument("mount_path", help="Path to unencrypted mount folder")
-    parser_edit.add_argument("--path", help="New path to encrypted gocryptfs folder", type=str, default=None)
-    parser_edit.add_argument("--mount", help="New path to unencrypted mount folder", type=str, default=None)
-    parser_edit.add_argument("--config", help="Path to external configuration", type=str, default=None)
-    parser_edit.add_argument("--password", help="Password for gocryptfs folder", type=str, default=None)
-    parser_edit.add_argument("--proceed", help="Proceed without being prompted", type=str, default=None)
-    parser_edit.add_argument("--auto-mount", help="Automatically mount", type=str, default=None)
-    parser_edit.set_defaults(func=edit_item)
-
-    parser_remove = subparsers.add_parser("remove", help="Remove a gocryptfs item from the keyring")
-    parser_remove.add_argument("path", help="Path to unencrypted mount folder")
-    parser_remove.set_defaults(func=remove_item)
-
-    args = parser.parse_args()
-    if args.func is None:
-        parser.print_help()
-        exit(RC_OK)
-
-    # normalize paths
-    #args = [_pathify(a) for a in args]
-
-    return parser.parse_args()
 
 def _exit(rc):
     """Exit with additional check if autostart file is still needed."""
@@ -543,18 +499,67 @@ def mount_items(args):
 
     return rc
 
-# =============================================================================
-# main
-# =============================================================================
+
+def _parse_args():
+    """Parse command line arguments."""
+
+    parser = argparse.ArgumentParser(description=DESCRIPTION, epilog=EPILOG)
+    parser.add_argument('--version', action='version', version=__version__)
+    parser.set_defaults(func=None)
+
+    subparsers = parser.add_subparsers()
+
+    parser_list = subparsers.add_parser("list", help="List all gocryptfs items stored in the keyring")
+    parser_list.add_argument('--path', help="Path to gocryptfs or mount folder", type=str, default=None)
+    parser_list.set_defaults(func=list_items)
+
+    parser_mount = subparsers.add_parser("mount", help="Mount all or selected paths stored in the keyring")
+    parser_mount.add_argument('path', help="Path to gocryptfs or mount folder", nargs='?', type=str, default=None)
+    parser_mount.add_argument("--auto", help="Mount all auto-mount paths stored in the keyring", action='store_true', default=False)
+    parser_mount.set_defaults(func=mount_items)
+
+    parser_add = subparsers.add_parser("add", help="Add a new gocryptfs path to the keyring")
+    parser_add.add_argument("gocryptfs_path", help="Path to encrypted gocryptfs folder")
+    parser_add.add_argument("mount_path", help="Path to unencrypted folder")
+    parser_add.add_argument("--config", help="Path to external configuration", type=str, default=None)
+    parser_add.add_argument("--password", help="Password for gocryptfs folder", type=str, default=None)
+    parser_add.add_argument("--proceed", help="Proceed without being prompted", type=str, default=None)
+    parser_add.add_argument("--auto-mount", help="Automatically mount", type=str, default=None)
+    parser_add.set_defaults(func=add_item)
+
+    parser_edit = subparsers.add_parser("edit", help="Edit a gocryptfs item in the keyring")
+    parser_edit.add_argument("mount_path", help="Path to unencrypted mount folder")
+    parser_edit.add_argument("--path", help="New path to encrypted gocryptfs folder", type=str, default=None)
+    parser_edit.add_argument("--mount", help="New path to unencrypted mount folder", type=str, default=None)
+    parser_edit.add_argument("--config", help="Path to external configuration", type=str, default=None)
+    parser_edit.add_argument("--password", help="Password for gocryptfs folder", type=str, default=None)
+    parser_edit.add_argument("--proceed", help="Proceed without being prompted", type=str, default=None)
+    parser_edit.add_argument("--auto-mount", help="Automatically mount", type=str, default=None)
+    parser_edit.set_defaults(func=edit_item)
+
+    parser_remove = subparsers.add_parser("remove", help="Remove a gocryptfs item from the keyring")
+    parser_remove.add_argument("path", help="Path to unencrypted mount folder")
+    parser_remove.set_defaults(func=remove_item)
+
+    args = parser.parse_args()
+    if args.func is None:
+        parser.print_help()
+        exit(RC_OK)
+
+    # normalize paths
+    #args = [_pathify(a) for a in args]
+
+    return parser.parse_args()
+
 
 def main():
-    args = _parse_args()
-    rc = args.func(args)
-    return rc
+    try:
+        args = _parse_args()
+        rc = args.func(args)
+    except LockedKeyring:
+        rc = RC_KEYRING_LOCKED
+    _exit(rc)
+
 
 if __name__ == '__main__':
-    rc = main()
-    # TODO: Determine exception for a locked keyring
-    #except gk.CancelledError:
-    #    rc = RC_KEYRING_LOCKED
-    _exit(rc)
+    main()
