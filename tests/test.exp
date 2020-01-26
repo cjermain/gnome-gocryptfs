@@ -184,7 +184,7 @@ autostart on
 
 Comment=Mount gocryptfs folders configured in GNOME's keyring
 [Desktop Entry]
-Exec=gnome-gocryptfs autostart
+Exec=gnome-gocryptfs mount --auto
 Icon=folder
 Name=Mount gocryptfs
 Type=Application
