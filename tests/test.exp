@@ -66,6 +66,9 @@ Mounting ./tenv/m3b: OK
 # EXPECT: 2 mounted paths (3a,3b)
 ./tenv/m3a type fuse.gocryptfs
 ./tenv/m3b type fuse.gocryptfs
+# EXPECT: 2 succeding unmounts (3a,3b)
+Unmounting ./tenv/m3a: OK
+Unmounting ./tenv/m3b: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 4 succeeding mounts (1,2,3a,3b)
 Reading Password from stdin
@@ -94,6 +97,11 @@ Mounting ./tenv/m1: Mount point already in use
 Mounting ./tenv/m2: Mount point already in use
 Mounting ./tenv/m3a: Mount point already in use
 Mounting ./tenv/m3b: Mount point already in use
+# EXPECT: 4 succeeding unmounts (1,2,3a,3b)
+Unmounting ./tenv/m1: OK
+Unmounting ./tenv/m2: OK
+Unmounting ./tenv/m3a: OK
+Unmounting ./tenv/m3b: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 3 items (1,2,3b)
 * gocryptfs path   : ./tenv/e1
@@ -159,6 +167,8 @@ Filesystem mounted and ready.
 Mounting ./tenv/m3b: OK
 # EXPECT: 1 mounted path (3b)
 ./tenv/m3b type fuse.gocryptfs
+# EXPECT: 1 succeeding unmount (3b)
+Unmounting ./tenv/m3b: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: failing edit (3b->2) - mount point in use
 Warning: mount point already in use
@@ -207,6 +217,8 @@ Filesystem mounted and ready.
 Mounting ./tenv/m1: OK
 # EXPECT: 1 mounted paths (1)
 ./tenv/m1 type fuse.gocryptfs
+# EXPECT: 1 succeeding unmount (1)
+Unmounting ./tenv/m1: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: succeeding edit (1) reset config file location
 # EXPECT: 1 listed item (1)
