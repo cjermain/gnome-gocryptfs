@@ -41,7 +41,7 @@ Usage
 Suppose you have a gocryptfs folder at `~/.Private.encrypted` which should get
 mounted to `~/Private`. Make it known to *gnome-gocryptfs*:
 
-    $ gnome-gocryptfs -a ~/.Private.encrypted ~/Private
+    $ gnome-gocryptfs add ~/.Private.encrypted ~/Private
     gocryptfs config file [-]: <optional custom gocryptfs.conf location>
     gocryptfs password: <enter gocryptfs password>
     Mount at login [Y/n]: <say 'y' or 'n'>
@@ -55,37 +55,42 @@ If you said *y* above to the login mount question, the gocryptfs folder gets
 mounted automatically at GNOME login. If you prefer to mount on demand, you do
 that with
 
-     $ gnome-gocryptfs -m ~/Private
+     $ gnome-gocryptfs mount ~/Private
 
 which looks up the password in the keyring and does the mounting without
 the need to enter the password manually.
 
-Unmount as usual, using *fusermount*:
+Unmount based on the path:
 
-    $ fusermount -u ~/Private
+    $ gnome-gocryptfs unmount ~/Private
+
+which can also take the mount path. Without a path, the unmount command
+unmounts all tracked gocryptfs folders.
 
 ### Other tasks
 
-You can also  show, edit and remove gocryptfs folders handled by *gnome-gocryptfs*:
+You can also show, edit and remove gocryptfs folders handled by *gnome-gocryptfs*:
 
     $ gnome-gocryptfs -h
 
-    Usage: gnome-gocryptfs --list
-           gnome-gocryptfs --mount [GOCRYPTFS-PATH-or-MOUNT-POINT]
-           gnome-gocryptfs --add GOCRYPTFS-PATH MOUNT-POINT
-           gnome-gocryptfs --edit MOUNT-POINT
-           gnome-gocryptfs --remove MOUNT-POINT
+    usage: gnome-gocryptfs [-h] [--version]
+                           {list,mount,unmount,add,edit,remove} ...
 
     Painlessly mount and manage gocryptfs folders using GNOME's keyring.
 
-    Options:
-      --version            show program's version number and exit
-      -h, --help           show this help message and exit
-      -l, --list           list all gocryptfs items stored in keyring
-      -m, --mount          mount all or selected gocryptfs paths stored in keyring
-      -a, --add            add a new gocryptfs item to keyring
-      -e, --edit           edit an gocryptfs item in keyring
-      -r, --remove         remove an gocryptfs item from keyring
+    positional arguments:
+      {list,mount,unmount,add,edit,remove}
+        list                List all gocryptfs items stored in the keyring
+        mount               Mount all or selected paths stored in the keyring
+        unmount             Unmount all or selected paths stored in the keyring
+        add                 Add a new gocryptfs path to the keyring
+        edit                Edit a gocryptfs item in the keyring
+        remove              Remove a gocryptfs item from the keyring
+
+    optional arguments:
+        -h, --help            show this help message and exit
+        --version             show program's version number and exit
+
     ...
 
 Usage should be straight forward - otherwise [submit an issue][itr].

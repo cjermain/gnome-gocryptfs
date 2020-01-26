@@ -26,161 +26,159 @@ rm -rf $TENV
 tar xf tenv.tar
 
 # clean up keyring
-$GGOCRYPTFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
-    while read MP ; do $GGOCRYPTFS -r $MP ; done
+$GGOCRYPTFS list | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+    while read MP ; do $GGOCRYPTFS remove $MP ; done
 
 # start tests
 
 expect "no listed items"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "succeeding add (1)"
-$GGOCRYPTFS -a $TENV/e1 $TENV/m1 --econfig "-" --password p1 --proceed n --amount y
+$GGOCRYPTFS add $TENV/e1 $TENV/m1 --config "-" --password p1 --proceed n --auto-mount y
 expect "1 listed item (1)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "failing add - mount point in use"
-$GGOCRYPTFS -a $TENV/e1 $TENV/m1 --econfig "-" --password p1 --proceed n --amount y
+$GGOCRYPTFS add $TENV/e1 $TENV/m1 --config "-" --password p1 --proceed n --auto-mount y
 expect "1 listed item (1)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "succeeding add (2)"
-$GGOCRYPTFS -a $TENV/e2 $TENV/m2 --econfig "-" --password p2 --proceed n --amount y
+$GGOCRYPTFS add $TENV/e2 $TENV/m2 --config "-" --password p2 --proceed n --auto-mount y
 expect "2 listed items (1,2)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "succeeding add (3a)"
-$GGOCRYPTFS -a $TENV/e3 $TENV/m3a --econfig "-" --password p3 --proceed n --amount y
+$GGOCRYPTFS add $TENV/e3 $TENV/m3a --config "-" --password p3 --proceed n --auto-mount y
 expect "3 listed items (1,2,3a)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "succeeding add (3b)"
-$GGOCRYPTFS -a $TENV/e3 $TENV/m3b --econfig "-" --password p3 --proceed n --amount y
+$GGOCRYPTFS add $TENV/e3 $TENV/m3b --config "-" --password p3 --proceed n --auto-mount y
 expect "4 listed items (1,2,3a,3b)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "2 succeeding mounts (3a,3b)"
-$GGOCRYPTFS -m $TENV/e3
+$GGOCRYPTFS mount $TENV/e3
 expect "2 mounted paths (3a,3b)"
 mounts
 
-for MPOINT in $TENV/m3* ; do
-    fusermount -u $MPOINT 2>&1
-done
+expect "2 succeding unmounts (3a,3b)"
+$GGOCRYPTFS unmount $TENV/e3
 expect "no mounted paths - all unmounted"
 mounts
 
 expect "4 succeeding mounts (1,2,3a,3b)"
-$GGOCRYPTFS -m
+$GGOCRYPTFS mount
 expect "4 mounted paths (1,2,3a,3b)"
 mounts
 
 expect "4 failing mounts - already mounted"
-$GGOCRYPTFS -m
+$GGOCRYPTFS mount
 
-for MPOINT in $TENV/m* ; do
-	fusermount -u $MPOINT 2>&1
-done
+expect "4 succeeding unmounts (1,2,3a,3b)"
+$GGOCRYPTFS unmount
 expect "no mounted paths - all unmounted"
 mounts
 
-$GGOCRYPTFS -r $TENV/m3a
+$GGOCRYPTFS remove $TENV/m3a
 expect "3 items (1,2,3b)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
-$GGOCRYPTFS -e $TENV/m3b --econfig "-" --password p3 --epath $TENV/e3 --mpoint $TENV/m3a --amount y
+$GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $TENV/m3a --auto-mount y
 expect "3 items (1,2,3a)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
-$GGOCRYPTFS -e $TENV/m3a --econfig "-" --password px --epath $TENV/e3 --mpoint $TENV/m3a --amount y
+$GGOCRYPTFS edit $TENV/m3a --config "-" --password px --path $TENV/e3 --mount $TENV/m3a --auto-mount y
 expect "3 items (1,2,3a)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "1 failing mount (3a) - wrong password"
-$GGOCRYPTFS -m $TENV/m3a
+$GGOCRYPTFS mount $TENV/m3a
 expect "no mounted paths"
 mounts
 
-$GGOCRYPTFS -e $TENV/m3a --econfig "-" --password p3 --epath $TENV/e3 --mpoint $TENV/m3b --amount y
+$GGOCRYPTFS edit $TENV/m3a --config "-" --password p3 --path $TENV/e3 --mount $TENV/m3b --auto-mount y
 expect "3 items (1,2,3b)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "1 succeeding mount (3b)"
-$GGOCRYPTFS -m $TENV/m3b
+$GGOCRYPTFS mount $TENV/m3b
 expect "1 mounted path (3b)"
 mounts
 
-fusermount -u $TENV/m3b 2>&1
+expect "1 succeeding unmount (3b)"
+$GGOCRYPTFS unmount $TENV/m3b
 
 expect "no mounted paths - all unmounted"
 mounts
 
 expect "failing edit (3b->2) - mount point in use"
-$GGOCRYPTFS -e $TENV/m3b --econfig "-" --password p3 --epath $TENV/e3 --mpoint $TENV/m2 --proceed n --amount y
+$GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $TENV/m2 --proceed n --auto-mount y
 expect "3 items (1,2,3b)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 expect "autostart on"
 test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 expect "2 succeeding edits"
-$GGOCRYPTFS -e $TENV/m1 --econfig "-" --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
-$GGOCRYPTFS -e $TENV/m2 --econfig "-" --password p2 --epath $TENV/e2 --mpoint $TENV/m2 --proceed n --amount n
+$GGOCRYPTFS edit $TENV/m1 --config "-" --password p1 --path $TENV/e1 --mount $TENV/m1 --proceed n --auto-mount n
+$GGOCRYPTFS edit $TENV/m2 --config "-" --password p2 --path $TENV/e2 --mount $TENV/m2 --proceed n --auto-mount n
 expect "autostart on"
 test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 expect "autostart content"
 cat autostart.desktop | sort -d # Ensure that the order does not matter
 expect "1 succeeding edits"
-$GGOCRYPTFS -e $TENV/m3b --econfig "-" --password p3 --epath $TENV/e3 --mpoint $TENV/m3b --proceed n --amount n
+$GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $TENV/m3b --proceed n --auto-mount n
 expect "autostart off"
 test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 
 # clean up keyring
 
-$GGOCRYPTFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
-    while read MP ; do $GGOCRYPTFS -r $MP ; done
+$GGOCRYPTFS list | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+    while read MP ; do $GGOCRYPTFS remove $MP ; done
 
 # test custom gocryptfs config file location
 
 expect "succeeding add (1) with custom config file location"
 mv $TENV/e1/gocryptfs.conf $TENV/e1_gocryptfs.conf
-$GGOCRYPTFS -a $TENV/e1 $TENV/m1 --econfig $TENV/e1_gocryptfs.conf --password p1 --proceed n --amount n
+$GGOCRYPTFS add $TENV/e1 $TENV/m1 --config $TENV/e1_gocryptfs.conf --password p1 --proceed n --auto-mount n
 expect "1 listed item (1)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "1 succeeding mounts (1)"
-$GGOCRYPTFS -m $TENV/e1
+$GGOCRYPTFS mount $TENV/e1
 expect "1 mounted paths (1)"
 mounts
 
-for MPOINT in $TENV/m1* ; do
-        fusermount -u $MPOINT 2>&1
-done
+expect "1 succeeding unmount (1)"
+$GGOCRYPTFS unmount $TENV/m1
 expect "no mounted paths - all unmounted"
 mounts
 
 expect "succeeding edit (1) reset config file location"
 mv $TENV/e1_gocryptfs.conf $TENV/e1/gocryptfs.conf
-$GGOCRYPTFS -e $TENV/m1 --econfig "-" --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
+$GGOCRYPTFS edit $TENV/m1 --config "-" --password p1 --path $TENV/e1 --mount $TENV/m1 --proceed n --auto-mount n
 expect "1 listed item (1)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "succeeding edit (1) with custom config file location"
 mv $TENV/e1/gocryptfs.conf $TENV/e1_gocryptfs.conf
-$GGOCRYPTFS -e $TENV/m1 --econfig $TENV/e1_gocryptfs.conf --password p1 --epath $TENV/e1 --mpoint $TENV/m1 --proceed n --amount n
+$GGOCRYPTFS edit $TENV/m1 --config $TENV/e1_gocryptfs.conf --password p1 --path $TENV/e1 --mount $TENV/m1 --proceed n --auto-mount n
 expect "1 listed item (1)"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 expect "succeeding remove (1)"
-$GGOCRYPTFS -r $TENV/m1
+$GGOCRYPTFS remove $TENV/m1
 mv $TENV/e1_gocryptfs.conf $TENV/e1/gocryptfs.conf
 expect "0 items"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 
 # clean up keyring
-$GGOCRYPTFS -l | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
-    while read MP ; do $GGOCRYPTFS -r $MP ; done
+$GGOCRYPTFS list | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+    while read MP ; do $GGOCRYPTFS remove $MP ; done
 
 expect "no listed items"
-$GGOCRYPTFS -l
+$GGOCRYPTFS list
 expect "autostart off"
 test -e autostart.desktop && echo "autostart on" || echo "autostart off"
 
