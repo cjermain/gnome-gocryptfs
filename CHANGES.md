@@ -1,6 +1,5 @@
 # Changes
 
-<<<<<<< HEAD
 ## gnome-gocryptfs v0.3 (?)
 
 * Replaced deprecated `optparse` with `argparse`
