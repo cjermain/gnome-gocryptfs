@@ -198,6 +198,7 @@ RC_KEYRING_LOCKED = 2
 RC_UNKNOWN_ITEM = 4
 RC_INVALID_PATH = 8
 RC_MOUNT_POINT_IN_USE = 16
+RC_UNMOUNT_FAILED = 32
 
 # =============================================================================
 # helper
@@ -479,9 +480,7 @@ def mount_items(args):
             rc |= RC_INVALID_PATH
         else:
             command = [
-                "gocryptfs",
-                "-o",
-                "nonempty",
+                "gocryptfs", "-o", "nonempty",
                 attributes["gocryptfs-path"],
                 attributes["mount-point"]
             ]
@@ -491,6 +490,44 @@ def mount_items(args):
             p.communicate(input=b"%s\n" % item.get_secret().get())
             msg += p.returncode and "FAILED" or "OK"
             rc |= 0 if p.returncode == os.EX_OK else RC_MOUNT_FAILED
+
+        print(msg)
+
+    return rc
+
+def unmount_items(args):
+    """Unmounts the all managed folders or a specific folder if specified."""
+
+    path = _pathify(args.path)
+
+    if path is None:
+        items = KEYRING.find()
+    else:
+        items = KEYRING.find_keys_for_path(path)
+
+    if not items and path:
+        print(MSG_NO_MATCH)
+        return RC_UNKNOWN_ITEM
+
+    rc = 0
+
+    for item in items:
+        attributes = item.get_attributes()
+
+        msg = "Unmounting {gocryptfs-path} at {mount-point}: ".format_map(attributes)
+
+        if not _is_mounted(attributes["mount-point"]):
+            continue
+        if not os.path.isdir(attributes["mount-point"]):
+            msg += "Mount point does not exist or is not a directory"
+            rc |= RC_INVALID_PATH
+        else:
+            command = ["fusermount", "-u", attributes["mount-point"]]
+
+            p = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            p.communicate()
+            msg += p.returncode and "FAILED" or "OK"
+            rc |= 0 if p.returncode == os.EX_OK else RC_UNMOUNT_FAILED
 
         print(msg)
 
@@ -514,6 +551,10 @@ def _parse_args():
     parser_mount.add_argument('path', help="Path to gocryptfs or mount folder", nargs='?', type=str, default=None)
     parser_mount.add_argument("--auto", help="Mount all auto-mount paths stored in the keyring", action='store_true', default=False)
     parser_mount.set_defaults(func=mount_items)
+
+    parser_unmount = subparsers.add_parser("unmount", help="Unmount all or selected paths stored in the keyring")
+    parser_unmount.add_argument('path', help="Path to gocryptfs or mount folder", nargs="?", type=str, default=None)
+    parser_unmount.set_defaults(func=unmount_items)
 
     parser_add = subparsers.add_parser("add", help="Add a new gocryptfs path to the keyring")
     parser_add.add_argument("path", help="Path to encrypted gocryptfs folder")

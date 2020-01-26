@@ -64,9 +64,8 @@ $GGOCRYPTFS mount $TENV/e3
 expect "2 mounted paths (3a,3b)"
 mounts
 
-for MPOINT in $TENV/m3* ; do
-    fusermount -u $MPOINT 2>&1
-done
+expect "2 succeding unmounts (3a,3b)"
+$GGOCRYPTFS unmount $TENV/e3
 expect "no mounted paths - all unmounted"
 mounts
 
@@ -78,9 +77,8 @@ mounts
 expect "4 failing mounts - already mounted"
 $GGOCRYPTFS mount
 
-for MPOINT in $TENV/m* ; do
-	fusermount -u $MPOINT 2>&1
-done
+expect "4 succeeding unmounts (1,2,3a,3b)"
+$GGOCRYPTFS unmount
 expect "no mounted paths - all unmounted"
 mounts
 
@@ -110,7 +108,8 @@ $GGOCRYPTFS mount $TENV/m3b
 expect "1 mounted path (3b)"
 mounts
 
-fusermount -u $TENV/m3b 2>&1
+expect "1 succeeding unmount (3b)"
+$GGOCRYPTFS unmount $TENV/m3b
 
 expect "no mounted paths - all unmounted"
 mounts
@@ -151,9 +150,8 @@ $GGOCRYPTFS mount $TENV/e1
 expect "1 mounted paths (1)"
 mounts
 
-for MPOINT in $TENV/m1* ; do
-        fusermount -u $MPOINT 2>&1
-done
+expect "1 succeeding unmount (1)"
+$GGOCRYPTFS unmount $TENV/m1
 expect "no mounted paths - all unmounted"
 mounts
 
