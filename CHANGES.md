@@ -1,5 +1,6 @@
 # Changes
 
+<<<<<<< HEAD
 ## gnome-gocryptfs v0.3 (?)
 
 * Replaced deprecated `optparse` with `argparse`
@@ -7,7 +8,7 @@
 * Added `unmount` command for unmounting all or specific managed folders
 * Refactoring work to simplify code
 
-## gnome-gocryptfs v0.2 (2019-01-23)
+## gnome-gocryptfs v0.2 (2020-01-23)
 
 * Initial fork of [gnome-encfs][gef] v0.1 (ported from Mercurial VCS)
 * Ported to support `gocryptfs` instead of `encfs`
