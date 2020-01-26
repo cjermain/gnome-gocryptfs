@@ -444,7 +444,7 @@ def mount_items(args):
     """Mount selected items.
 
     If `path` is set, mount only those items where the gocryptfs path or mount
-    point equals `path`. If `autostart` is True, mount only those items where
+    point equals `path`. If `auto` is True, mount only those items where
     auto-mount is set to 'y'.
 
     Return true if all items have been mounted successfully and false
@@ -452,9 +452,8 @@ def mount_items(args):
 
     """
     path = _pathify(args.path)
-    autostart = args.auto
 
-    attributes = {'auto-mount': 'y'} if autostart else {}
+    attributes = {'auto-mount': 'y'} if args.auto else {}
 
     if path is None:
         items = KEYRING.find(attributes)
