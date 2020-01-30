@@ -214,7 +214,7 @@ def _exit(rc):
 
 def _proceed(msg, proceed=None):
     print("Warning: %s" % msg)
-    proceed = proceed or raw_input("Proceed [y/N]: ") or "n"
+    proceed = proceed or input("Proceed [y/N]: ") or "n"
     if proceed.strip()[0].lower() != "y":
         _exit(2)
 
@@ -330,13 +330,13 @@ def add_item(args):
     if KEYRING.find({'mount-point': mpoint}):
         _proceed("mount point already in keyring", args.proceed)
 
-    config = args.config or raw_input("gocryptfs config file [-]: ") or "-"
+    config = args.config or input("gocryptfs config file [-]: ") or "-"
 
     if not _is_gocryptfs(path, config):
         _proceed(MSG_NO_GOCRYPTFS_PATH, args.proceed)
 
     secret = args.password or getpass.getpass("gocryptfs password: ")
-    amount = args.auto_mount or raw_input("Mount at login [Y/n]: ") or "y"
+    amount = args.auto_mount or input("Mount at login [Y/n]: ") or "y"
     amount = amount.strip()[0].lower() == "y" and "y" or "n"
 
     attributes = KEYRING.default_attributes()
@@ -379,17 +379,17 @@ def edit_item(args):
         attributes = item.get_attributes()
         attributes["gocryptfs-path"] = _pathify(
             args.path or
-            raw_input("gocryptfs path [%s]: " % attributes["gocryptfs-path"]) or
+            input("gocryptfs path [%s]: " % attributes["gocryptfs-path"]) or
             attributes["gocryptfs-path"]
         )
         attributes["gocryptfs-config"] = (
             args.config or
-            raw_input("gocryptfs config file [%s] (`-`: default): " % attributes["gocryptfs-config"]) or
+            input("gocryptfs config file [%s] (`-`: default): " % attributes["gocryptfs-config"]) or
             attributes["gocryptfs-config"]
         )
         attributes["mount-point"] = _pathify(
             args.mount or
-            raw_input("Mount point [%s]: " % attributes["mount-point"]) or
+            input("Mount point [%s]: " % attributes["mount-point"]) or
             attributes["mount-point"]
         )
         secret = (
@@ -399,7 +399,7 @@ def edit_item(args):
         )
         attributes["auto-mount"] = (
             args.auto_mount or
-            raw_input("Mount at login [%s]: " % "Y/n" if attributes["auto-mount"] == "y" else "y/N") or
+            input("Mount at login [%s]: " % "Y/n" if attributes["auto-mount"] == "y" else "y/N") or
             attributes["auto-mount"]
         )
         attributes["auto-mount"] = (
