@@ -1,59 +1,76 @@
 # EXPECT: no listed items
 # EXPECT: succeeding add (1)
 # EXPECT: 1 listed item (1)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: failing add - mount point in use
 Warning: mount point already in keyring
 # EXPECT: 1 listed item (1)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: succeeding add (2)
 # EXPECT: 2 listed items (1,2)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: succeeding add (3a)
 # EXPECT: 3 listed items (1,2,3a)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3a
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3a
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: succeeding add (3b)
 # EXPECT: 4 listed items (1,2,3a,3b)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3a
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3b
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3a
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3b
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: 2 succeeding mounts (3a,3b)
 Reading Password from stdin
 Decrypting master key
@@ -104,62 +121,82 @@ Unmounting ./tenv/m3a: OK
 Unmounting ./tenv/m3b: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 3 items (1,2,3b)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3b
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3b
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: 3 items (1,2,3a)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3a
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3a
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: 3 items (1,2,3a)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3a
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3a
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: 1 failing mount (3a) - wrong password
 Reading Password from stdin
 Decrypting master key
 Mounting ./tenv/m3a: FAILED
 # EXPECT: no mounted paths
 # EXPECT: 3 items (1,2,3b)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3b
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3b
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: 1 succeeding mount (3b)
 Reading Password from stdin
 Decrypting master key
@@ -173,18 +210,23 @@ Unmounting ./tenv/m3b: OK
 # EXPECT: failing edit (3b->2) - mount point in use
 Warning: mount point already in use
 # EXPECT: 3 items (1,2,3b)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e2
-  mount point      : ./tenv/m2
-  mount at login   : yes
-  gocryptfs config : -
-* gocryptfs path   : ./tenv/e3
-  mount point      : ./tenv/m3b
-  mount at login   : yes
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e2
+MOUNT     : ./tenv/m2
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
+
+STASH     : ./tenv/e3
+MOUNT     : ./tenv/m3b
+CONFIG    : inline
+AUTOMOUNT : yes
+MOUNTED   : no
 # EXPECT: autostart on
 autostart on
 # EXPECT: 2 succeeding edits
@@ -205,10 +247,11 @@ X-GNOME-Autostart-enabled=true
 autostart off
 # EXPECT: succeeding add (1) with custom config file location
 # EXPECT: 1 listed item (1)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : no
-  gocryptfs config : ./tenv/e1_gocryptfs.conf
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : ./tenv/e1_gocryptfs.conf
+AUTOMOUNT : no
+MOUNTED   : no
 # EXPECT: 1 succeeding mounts (1)
 Using config file at custom location ./tenv/e1_gocryptfs.conf
 Reading Password from stdin
@@ -222,16 +265,18 @@ Unmounting ./tenv/m1: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: succeeding edit (1) reset config file location
 # EXPECT: 1 listed item (1)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : no
-  gocryptfs config : -
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : inline
+AUTOMOUNT : no
+MOUNTED   : no
 # EXPECT: succeeding edit (1) with custom config file location
 # EXPECT: 1 listed item (1)
-* gocryptfs path   : ./tenv/e1
-  mount point      : ./tenv/m1
-  mount at login   : no
-  gocryptfs config : ./tenv/e1_gocryptfs.conf
+STASH     : ./tenv/e1
+MOUNT     : ./tenv/m1
+CONFIG    : ./tenv/e1_gocryptfs.conf
+AUTOMOUNT : no
+MOUNTED   : no
 # EXPECT: succeeding remove (1)
 # EXPECT: 0 items
 # EXPECT: no listed items

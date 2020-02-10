@@ -305,14 +305,20 @@ def list_items(args):
         print(MSG_NO_MATCH)
         return RC_UNKNOWN_ITEM
 
-    for item in items:
+    for i, item in enumerate(items):
+        if i > 0: print()
+
         attributes = item.get_attributes()
         attributes['auto-mount'] = 'yes' if attributes['auto-mount'] == 'y' else 'no'
+        if attributes['gocryptfs-config'] == '-':
+            attributes['gocryptfs-config'] = 'inline'
+        attributes['mounted'] = 'yes' if _is_mounted(attributes['mount-point']) else 'no'
 
-        message =  "* gocryptfs path   : {gocryptfs-path}\n"
-        message += "  mount point      : {mount-point}\n"
-        message += "  mount at login   : {auto-mount}\n"
-        message += "  gocryptfs config : {gocryptfs-config}"
+        message =  "STASH     : {gocryptfs-path}\n"
+        message += "MOUNT     : {mount-point}\n"
+        message += "CONFIG    : {gocryptfs-config}\n"
+        message += "AUTOMOUNT : {auto-mount}\n"
+        message += "MOUNTED   : {mounted}"
 
         print(message.format_map(attributes))
 
