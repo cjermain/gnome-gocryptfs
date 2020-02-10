@@ -26,7 +26,7 @@ rm -rf $TENV
 tar xf tenv.tar
 
 # clean up keyring
-$GGOCRYPTFS list | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+$GGOCRYPTFS list | grep "^MOUNT " | grep "/tenv/m[0-9]" | awk {'print $3'} | \
     while read MP ; do $GGOCRYPTFS remove $MP ; done
 
 # start tests
@@ -134,7 +134,7 @@ test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
 
 # clean up keyring
 
-$GGOCRYPTFS list | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+$GGOCRYPTFS list | grep "^MOUNT " | grep "/tenv/m[0-9]" | awk {'print $3'} | \
     while read MP ; do $GGOCRYPTFS remove $MP ; done
 
 # test custom gocryptfs config file location
@@ -174,7 +174,7 @@ expect "0 items"
 $GGOCRYPTFS list
 
 # clean up keyring
-$GGOCRYPTFS list | grep "mount point" | grep "/tenv/m[0-9]" | awk {'print $4'} | \
+$GGOCRYPTFS list | grep "^MOUNT " | grep "/tenv/m[0-9]" | awk {'print $3'} | \
     while read MP ; do $GGOCRYPTFS remove $MP ; done
 
 expect "no listed items"
