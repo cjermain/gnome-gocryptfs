@@ -491,7 +491,12 @@ def mount_items(args):
             ]
             command[1:1] = _config_commands(attributes["gocryptfs-config"])
 
-            p = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+            p = subprocess.Popen(
+                command,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
             p.communicate(input=b"%s\n" % item.get_secret().get())
             msg += p.returncode and "FAILED" or "OK"
             rc |= 0 if p.returncode == os.EX_OK else RC_MOUNT_FAILED

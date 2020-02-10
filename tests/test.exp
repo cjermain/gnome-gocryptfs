@@ -72,12 +72,6 @@ CONFIG    : inline
 AUTOMOUNT : yes
 MOUNTED   : no
 # EXPECT: 2 succeeding mounts (3a,3b)
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
 Mounting ./tenv/m3a: OK
 Mounting ./tenv/m3b: OK
 # EXPECT: 2 mounted paths (3a,3b)
@@ -88,18 +82,6 @@ Unmounting ./tenv/m3a: OK
 Unmounting ./tenv/m3b: OK
 # EXPECT: no mounted paths - all unmounted
 # EXPECT: 4 succeeding mounts (1,2,3a,3b)
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
 Mounting ./tenv/m1: OK
 Mounting ./tenv/m2: OK
 Mounting ./tenv/m3a: OK
@@ -175,8 +157,6 @@ CONFIG    : inline
 AUTOMOUNT : yes
 MOUNTED   : no
 # EXPECT: 1 failing mount (3a) - wrong password
-Reading Password from stdin
-Decrypting master key
 Mounting ./tenv/m3a: FAILED
 # EXPECT: no mounted paths
 # EXPECT: 3 items (1,2,3b)
@@ -198,9 +178,6 @@ CONFIG    : inline
 AUTOMOUNT : yes
 MOUNTED   : no
 # EXPECT: 1 succeeding mount (3b)
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
 Mounting ./tenv/m3b: OK
 # EXPECT: 1 mounted path (3b)
 ./tenv/m3b type fuse.gocryptfs
@@ -253,10 +230,6 @@ CONFIG    : ./tenv/e1_gocryptfs.conf
 AUTOMOUNT : no
 MOUNTED   : no
 # EXPECT: 1 succeeding mounts (1)
-Using config file at custom location ./tenv/e1_gocryptfs.conf
-Reading Password from stdin
-Decrypting master key
-Filesystem mounted and ready.
 Mounting ./tenv/m1: OK
 # EXPECT: 1 mounted paths (1)
 ./tenv/m1 type fuse.gocryptfs
