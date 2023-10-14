@@ -199,6 +199,7 @@ RC_UNKNOWN_ITEM = 4
 RC_INVALID_PATH = 8
 RC_MOUNT_POINT_IN_USE = 16
 RC_UNMOUNT_FAILED = 32
+RC_ABORTED = 64
 
 # =============================================================================
 # helper
@@ -208,15 +209,18 @@ RC_UNMOUNT_FAILED = 32
 def _exit(rc):
     """Exit with additional check if autostart file is still needed."""
 
-    if rc != RC_KEYRING_LOCKED: # getting items requires an unlocked keyring
-        _autostart(KEYRING.find({'auto-mount': 'y'}))
+    # Set up autostart only if:
+    # - Keyring is unlock (we need to access items)
+    # - User has not aborted the current action
+    if rc not in [RC_KEYRING_LOCKED, RC_ABORTED]:
+        _autostart(KEYRING.find({"auto-mount": "y"}))
     sys.exit(rc)
 
 def _proceed(msg, proceed=None):
     print("Warning: %s" % msg)
     proceed = proceed or input("Proceed [y/N]: ") or "n"
     if proceed.strip()[0].lower() != "y":
-        _exit(2)
+        _exit(RC_ABORTED)
 
 def _pathify(path):
     if path is None:
