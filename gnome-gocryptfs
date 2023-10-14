@@ -405,7 +405,7 @@ def edit_item(args):
         )
         attributes["auto-mount"] = (
             args.auto_mount or
-            input("Mount at login [%s]: " % "Y/n" if attributes["auto-mount"] == "y" else "y/N") or
+            input("Mount at login [%s]: " % ("Y/n" if attributes["auto-mount"] == "y" else "y/N")) or
             attributes["auto-mount"]
         )
         attributes["auto-mount"] = (
