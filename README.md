@@ -4,9 +4,10 @@ gnome-gocryptfs
 ![](https://github.com/cjermain/gnome-gocryptfs/workflows/Run%20Tests/badge.svg)
 
 *gnome-gocryptfs* integrates [gocryptfs][cfs] folders into the GNOME desktop by storing
-their passwords in the [keyring][gkr] and optionally mounting them at login
-using GNOME's autostart mechanism. This package is a fork of the [gnome-encfs][gef]
-project.
+their passwords in the [keyring][gkr] and optionally mounting them at login (and
+unmouting them at logout
+[on most distribution](#automatically-unmount-gocryptfs-folders-on-logout)). This package
+is a fork of the [gnome-encfs][gef] project.
 
 *gnome-gocryptfs* allows you to use strong passwords for gocryptfs folders while still
 mounting them painlessly (i.e. no password prompt).  This is an advantage over
@@ -97,9 +98,15 @@ Usage should be straight forward - otherwise [submit an issue][itr].
 
 ### Automatically unmount gocryptfs folders on logout
 
-Unfortunately there's no equivalent to GNOME's autostart scripts which could be
-used to automatically unmount your gocryptfs folders on logout (without shutting
-down). However, there's a manual solution using a [GDM hook script][gdm]:
+If your distribution uses systemd to handle user sessions, your gocryptfs folders
+will be automatically mounted/unmounted at login/logout.
+
+Otherwise, gocryptfs folders can still be automatically mount at login using GNOME's
+autostart mechanism. Unfortunately there's no equivalent to GNOME's autostart scripts
+which could be used to automatically unmount your gocryptfs folders on logout
+(without shutting down).
+
+However, there's a manual solution using a [GDM hook script][gdm]:
 `/etc/gdm/PostSession/Default`. Open this file in an editor (requires *root*
 privileges) and add these lines:
 
@@ -128,4 +135,3 @@ License
 [gkr]: http://live.gnome.org/GnomeKeyring
 [gpl]: http://www.gnu.org/licenses/gpl.html
 [itr]: https://github.com/cjermain/gnome-gocryptfs/issues
-

@@ -210,6 +210,29 @@ autostart on
 # EXPECT: autostart on
 autostart on
 # EXPECT: autostart content
+[Unit]
+Description=Gnome gocryptfs automounter service
+PartOf=graphical-session.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=gnome-gocryptfs mount --auto
+ExecStop=gnome-gocryptfs unmount
+
+[Install]
+WantedBy=graphical-session.target
+# EXPECT: 1 succeeding edits
+# EXPECT: autostart off
+autostart off
+# EXPECT: autostart using desktop method
+*WARNING* Systemd doesn't handle user sessions. Fallback to GNOME's autostart mechanism.
+Your gocryptfs folders will not be unmounted on logout. See gnome-gocryptfs README for a workaround.
+# EXPECT: autostart systemd off
+autostart systemd off
+# EXPECT: autostart desktop on
+autostart desktop on
+# EXPECT: autostart desktop content
 
 Comment=Mount gocryptfs folders configured in GNOME's keyring
 [Desktop Entry]
@@ -219,9 +242,11 @@ Name=Mount gocryptfs
 Type=Application
 Version=1.0
 X-GNOME-Autostart-enabled=true
-# EXPECT: 1 succeeding edits
-# EXPECT: autostart off
-autostart off
+# EXPECT: autostart using systemd method
+# EXPECT: autostart systemd on
+autostart systemd on
+# EXPECT: autostart desktop off
+autostart desktop off
 # EXPECT: succeeding add (1) with custom config file location
 # EXPECT: 1 listed item (1)
 STASH     : ./tenv/e1

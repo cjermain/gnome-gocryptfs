@@ -38,8 +38,10 @@ from gi.repository import Secret
 
 __version__ = "0.3"
 
-TEST = "GNOME_GOCRYPTFS_TEST" in os.environ
-
+TEST_ENV_VARNAME = "GNOME_GOCRYPTFS_TEST"
+TEST_SYSTEMD_TOKEN = "SYSTEMD"
+TEST = TEST_ENV_VARNAME in os.environ
+TEST_TYPE = os.environ[TEST_ENV_VARNAME] if TEST else ""
 
 class LockedKeyring(Exception):
     pass
@@ -181,6 +183,13 @@ MSG_NO_MATCH = ("No matching gocryptfs items in keyring.\n"
 MSG_NO_GOCRYPTFS_PATH = ("No gocryptfs at given path (or the gocryptfs config file "
                      "location is invalid)")
 
+MSG_NO_SYSTEMD_SESSION = (
+    "*WARNING* Systemd doesn't handle user sessions. Fallback to "
+    "GNOME's autostart mechanism.\n"
+    "Your gocryptfs folders will not be unmounted on logout. See gnome-gocryptfs "
+    "README for a workaround."
+)
+
 DESCRIPTION = """Painlessly mount and manage gocryptfs folders using GNOME's
 keyring."""
 
@@ -258,7 +267,62 @@ def _is_gocryptfs(path, config):
     p.communicate()
     return p.returncode == 0
 
-def _autostart(enable):
+def _enable_systemd_unit(enable):
+    command = [
+        "systemctl",
+        "--user",
+        "enable" if enable else "disable",
+        "gnome-gocryptfs.service",
+    ]
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p.communicate()
+    if p.returncode != 0:
+        print(
+            f"Failed to {'enable' if enable else 'disable'} gnome-gocryptfs service in systemd"
+        )
+
+def _create_systemd_unit(enable):
+    """Set up a systemd user unit to automount folders when user logins"""
+
+    if TEST:
+        fname = os.path.join(os.path.curdir, "autostart.service")
+    else:
+        fname = os.path.join(xdg_config_home, "systemd/user", "gnome-gocryptfs.service")
+
+    if not enable:
+        _enable_systemd_unit(enable)
+        if os.path.exists(fname):
+            os.remove(fname)
+        return
+
+    # Systemd user config directory may not exist...
+    os.makedirs(os.path.dirname(fname), exist_ok=True)
+
+    # '~/.local/bin' is not in the default PATH (in systemd user unit)
+    # So use the absolute path to this script.
+    # TODO: Remove this test patch
+    our_path = os.path.realpath(__file__) if not TEST else "gnome-gocryptfs"
+    content = (
+        "[Unit]\n"
+        "Description=Gnome gocryptfs automounter service\n"
+        "PartOf=graphical-session.target\n"
+        "\n"
+        "[Service]\n"
+        "Type=oneshot\n"
+        "RemainAfterExit=yes\n"
+        f"ExecStart={our_path} mount --auto\n"
+        f"ExecStop={our_path} unmount\n"
+        "\n"
+        "[Install]\n"
+        "WantedBy=graphical-session.target\n"
+    )
+
+    with open(fname, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    _enable_systemd_unit(enable)
+
+def _create_desktop_file(enable):
     """Set up XDG autostart file."""
 
     if TEST:
@@ -285,6 +349,32 @@ def _autostart(enable):
         entry.set(key, value)
     entry.validate()
     entry.write()
+
+def _autostart(enable):
+    """Ensure folders are automatically mount and properly unmounted."""
+
+    # Test if user sessions are handled by systemd
+    command = [
+        "systemctl",
+        "--user",
+        "is-enabled",
+        "--quiet",
+        "graphical-session.target",
+    ]
+    p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p.communicate()
+
+    # TODO: Remove this test patch
+    is_systemd_available = (p.returncode == 0) if not TEST else (TEST_TYPE == TEST_SYSTEMD_TOKEN)
+
+    if is_systemd_available:
+        _create_desktop_file(False)
+        _create_systemd_unit(enable)
+    else:  # Fallback to GNOME's autostart mechanism
+        print(MSG_NO_SYSTEMD_SESSION)
+        _create_systemd_unit(False)
+        _create_desktop_file(enable)
+
 
 # =============================================================================
 # actions
