@@ -1,4 +1,6 @@
-export GNOME_GOCRYPTFS_TEST=""
+TEST_SYSTEMD="SYSTEMD"
+TEST_NO_SYSTEMD="NO_SYSTEMD"
+export GNOME_GOCRYPTFS_TEST=$TEST_SYSTEMD
 
 expect() {
 	echo "# EXPECT: $1"
@@ -119,18 +121,36 @@ $GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $T
 expect "3 items (1,2,3b)"
 $GGOCRYPTFS list
 expect "autostart on"
-test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
+test -e autostart.service && echo "autostart on" ||  echo "autostart off"
 expect "2 succeeding edits"
 $GGOCRYPTFS edit $TENV/m1 --config "-" --password p1 --path $TENV/e1 --mount $TENV/m1 --proceed n --auto-mount n
 $GGOCRYPTFS edit $TENV/m2 --config "-" --password p2 --path $TENV/e2 --mount $TENV/m2 --proceed n --auto-mount n
 expect "autostart on"
-test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
+test -e autostart.service && echo "autostart on" ||  echo "autostart off"
 expect "autostart content"
-cat autostart.desktop | sort -d # Ensure that the order does not matter
+cat autostart.service
 expect "1 succeeding edits"
 $GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $TENV/m3b --proceed n --auto-mount n
 expect "autostart off"
-test -e autostart.desktop && echo "autostart on" ||  echo "autostart off"
+test -e autostart.service && echo "autostart on" ||  echo "autostart off"
+
+# Test alternative autostart method
+expect "autostart using desktop method"
+export GNOME_GOCRYPTFS_TEST=$TEST_NO_SYSTEMD
+$GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $TENV/m3b --proceed n --auto-mount y
+expect "autostart systemd off"
+test -e autostart.service && echo "autostart systemd on" ||  echo "autostart systemd off"
+expect "autostart desktop on"
+test -e autostart.desktop && echo "autostart desktop on" ||  echo "autostart desktop off"
+expect "autostart desktop content"
+cat autostart.desktop | sort -d # Ensure that the order does not matter
+expect "autostart using systemd method"
+export GNOME_GOCRYPTFS_TEST=$TEST_SYSTEMD
+$GGOCRYPTFS edit $TENV/m3b --config "-" --password p3 --path $TENV/e3 --mount $TENV/m3b --proceed n --auto-mount y
+expect "autostart systemd on"
+test -e autostart.service && echo "autostart systemd on" ||  echo "autostart systemd off"
+expect "autostart desktop off"
+test -e autostart.desktop && echo "autostart desktop on" ||  echo "autostart desktop off"
 
 # clean up keyring
 
@@ -180,5 +200,5 @@ $GGOCRYPTFS list | grep "^MOUNT " | grep "/tenv/m[0-9]" | awk {'print $3'} | \
 expect "no listed items"
 $GGOCRYPTFS list
 expect "autostart off"
-test -e autostart.desktop && echo "autostart on" || echo "autostart off"
+test -e autostart.service && echo "autostart on" || echo "autostart off"
 
